@@ -171,7 +171,10 @@ export default function MarketCarousel({ markets, onSelectMarket }) {
                         </p>
                       </div>
                       <div 
-                        className="outcome-btn pointer-events-none transition-all duration-700"
+                        className="outcome-btn transition-all duration-700"
+                        onTouchStart={(e) => e.stopPropagation()}
+                        onTouchMove={(e) => e.stopPropagation()}
+                        onTouchEnd={(e) => e.stopPropagation()}
                         style={{
                           transform: isActive ? 'translateY(0)' : 'translateY(10px)',
                           opacity: isActive ? 1 : 0.5,
@@ -193,13 +196,22 @@ export default function MarketCarousel({ markets, onSelectMarket }) {
                     >
                       {isActive && (
                         <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onSelectMarket(market);
-                          }}
-                          className="w-full btn-primary text-sm py-3"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onSelectMarket(market);
+                            }}
+                            onTouchStart={(e) => {
+                              e.stopPropagation();
+                            }}
+                            onTouchMove={(e) => {
+                              e.stopPropagation();
+                            }}
+                            onTouchEnd={(e) => {
+                              e.stopPropagation();
+                            }}
+                            className="w-full btn-primary text-sm py-3"
                         >
-                          Place Bet
+                            Place Bet
                         </button>
                       )}
                     </div>
