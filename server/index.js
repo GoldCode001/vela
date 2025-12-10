@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3001;
 
 // CORS configuration for production
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: process.env.FRONTEND_URL || '*',
   credentials: true,
   optionsSuccessStatus: 200
 };
@@ -24,9 +24,15 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({ message: 'Vela API is running' });
+});
+
 app.use('/api/markets', marketsRouter);
 app.use('/api/bets', betsRouter);
 
-app.listen(PORT, () => {
+// Listen on 0.0.0.0 for Railway
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
