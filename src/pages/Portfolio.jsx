@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar.jsx';
 import AnimatedBackground from '../components/AnimatedBackground.jsx';
 import { useBalance } from '../hooks/useBalance';
+import { API_URL } from '../config/api';
 
 export default function Portfolio() {
   const { ready, authenticated, user } = usePrivy();
@@ -30,7 +31,7 @@ export default function Portfolio() {
   const fetchPositions = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:3001/api/bets/positions/${wallet.address}`);
+      const response = await fetch(`${API_URL}/api/bets/positions/${wallet.address}`);
       const data = await response.json();
       
       if (data.success) {

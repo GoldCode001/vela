@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { useWalletExport } from '../hooks/useWalletExport';
+import { API_URL } from '../config/api';
 
 export default function BettingModal({ market, onClose, userBalance, onBalanceUpdate }) {
   const { user } = usePrivy();
@@ -36,7 +37,7 @@ export default function BettingModal({ market, onClose, userBalance, onBalanceUp
       }
 
       // Execute trade on backend
-      const response = await fetch('http://localhost:3001/api/bets/place', {
+      const response = await fetch(`${API_URL}/api/bets/place`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

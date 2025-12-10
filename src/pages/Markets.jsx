@@ -6,6 +6,7 @@ import AnimatedBackground from '../components/AnimatedBackground.jsx';
 import BettingModal from '../components/BettingModal.jsx';
 import MarketCarousel from '../components/MarketCarousel.jsx';
 import { useBalance } from '../hooks/useBalance.js';
+import { API_URL } from '../config/api';
 
 export default function Markets() {
   const { ready, authenticated } = usePrivy();
@@ -29,7 +30,7 @@ export default function Markets() {
 
   const fetchMarkets = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/markets');
+      const response = await fetch(`${API_URL}/api/markets`);
       const data = await response.json();
       
       if (data.success) {
