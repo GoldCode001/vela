@@ -1,8 +1,8 @@
 import { usePrivy } from '@privy-io/react-auth';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import Navbar from '../components/Navbar';
-import AnimatedBackground from '../components/AnimatedBackground';
+import Navbar from '../components/Navbar.jsx';
+import AnimatedBackground from '../components/AnimatedBackground.jsx';
 import { useBalance } from '../hooks/useBalance';
 
 export default function Portfolio() {

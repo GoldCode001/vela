@@ -1,11 +1,11 @@
 import { usePrivy } from '@privy-io/react-auth';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import Navbar from '../components/Navbar';
-import AnimatedBackground from '../components/AnimatedBackground';
-import BettingModal from '../components/BettingModal';
-import MarketCarousel from '../components/MarketCarousel';
-import { useBalance } from '../hooks/useBalance';
+import Navbar from '../components/Navbar.jsx';
+import AnimatedBackground from '../components/AnimatedBackground.jsx';
+import BettingModal from '../components/BettingModal.jsx';
+import MarketCarousel from '../components/MarketCarousel.jsx';
+import { useBalance } from '../hooks/useBalance.js';
 
 export default function Markets() {
   const { ready, authenticated } = usePrivy();

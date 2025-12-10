@@ -1,8 +1,8 @@
 import { usePrivy } from '@privy-io/react-auth';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
-import LoginButton from '../components/LoginButton';
-import AnimatedBackground from '../components/AnimatedBackground';
+import LoginButton from '../components/LoginButton.jsx';
+import AnimatedBackground from '../components/AnimatedBackground.jsx';
 
 export default function Landing() {
   const { ready, authenticated } = usePrivy();

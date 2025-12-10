@@ -1,8 +1,8 @@
 import { Routes, Route } from 'react-router-dom';
-import Landing from './pages/Landing';
-import Dashboard from './pages/Dashboard';
-import Markets from './pages/Markets';
-import Portfolio from './pages/Portfolio';
+import Landing from './pages/Landing.jsx';
+import Dashboard from './pages/Dashboard.jsx';
+import Markets from './pages/Markets.jsx';
+import Portfolio from './pages/Portfolio.jsx';
 
 function App() {
   return (
