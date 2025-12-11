@@ -29,7 +29,6 @@ export default function BettingModal({ market, onClose, userBalance, onBalanceUp
     setLoading(true);
 
     try {
-      // Get private key from Privy (user must approve)
       console.log('🔐 Requesting wallet export...');
       const privateKey = await getPrivateKey();
       
@@ -39,7 +38,6 @@ export default function BettingModal({ market, onClose, userBalance, onBalanceUp
 
       console.log('✅ Wallet exported, executing trade...');
 
-      // Execute real trade
       const response = await fetch(`${API_URL}/api/bets/place`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -61,12 +59,11 @@ export default function BettingModal({ market, onClose, userBalance, onBalanceUp
       }
 
       if (data.trade.real) {
-        alert(`✅ REAL BET PLACED!\n\nYou got ${data.trade.shares} shares at $${data.trade.entryPrice}\n\nOrder ID: ${data.trade.orderId}`);
+        alert(`✅ Bet Placed Successfully!\n\nShares: ${data.trade.shares}\nEntry Price: $${data.trade.entryPrice}\n\nOrder ID: ${data.trade.orderId}`);
       } else {
-        alert(`⚠️ Bet recorded but trade was simulated\n\nShares: ${data.trade.shares}`);
+        alert(`⚠️ Bet recorded (simulated mode)\n\nShares: ${data.trade.shares}`);
       }
       
-      // Refresh balance
       onBalanceUpdate();
       onClose();
     } catch (error) {
@@ -77,13 +74,11 @@ export default function BettingModal({ market, onClose, userBalance, onBalanceUp
     }
   };
 
-  // ... rest of component stays the same
-
   if (showFunding) {
     return (
       <div className="modal-overlay" onClick={onClose}>
         <div className="modal p-6 sm:p-8 max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
-          <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">Add Funds</h3>
+          <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">Insufficient Balance</h3>
           <p className="text-gray-400 text-sm sm:text-base mb-2">
             Your balance: <span className="text-white font-semibold">${userBalance.toFixed(2)}</span>
           </p>
@@ -91,18 +86,18 @@ export default function BettingModal({ market, onClose, userBalance, onBalanceUp
             You need <span className="text-white font-semibold">${parseFloat(amount).toFixed(2)}</span> to place this bet.
           </p>
 
-          <p className="text-gray-600 text-xs mb-4 sm:mb-6">
-            * Ramp integration coming soon! You'll be able to add USDC using your credit card or bank transfer.
+          <p className="text-white text-sm mb-4">
+            Go to Dashboard to add funds with your credit card via Ramp Network.
           </p>
           
           <button 
             onClick={() => {
-              alert('Ramp Network integration pending approval. You will be able to add funds with credit card soon!');
-              setShowFunding(false);
+              onClose();
+              window.location.href = '/dashboard';
             }}
             className="btn-primary w-full mb-3 sm:mb-4 text-sm sm:text-base"
           >
-            Add Funds with Card (Coming Soon)
+            Go to Dashboard
           </button>
           
           <button onClick={() => setShowFunding(false)} className="btn-secondary w-full text-sm sm:text-base">
