@@ -5,17 +5,22 @@ import Navbar from '../components/Navbar.jsx';
 import AnimatedBackground from '../components/AnimatedBackground.jsx';
 import BettingModal from '../components/BettingModal.jsx';
 import MarketCarousel from '../components/MarketCarousel.jsx';
-import { useBalance } from '../hooks/useBalance.js';
+import { useBalance } from '../hooks/useBalance';
 import { API_URL } from '../config/api';
 
 export default function Markets() {
   const { ready, authenticated } = usePrivy();
   const navigate = useNavigate();
-  const [markets, setMarkets] = useState([]);
+  const [allMarkets, setAllMarkets] = useState([]);
+  const [filteredMarkets, setFilteredMarkets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedMarket, setSelectedMarket] = useState(null);
   
-  // USE REAL BLOCKCHAIN BALANCE
+  // Filter states
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('volume'); // 'volume', 'newest', 'probability'
+  
   const { balance, refresh: refreshBalance } = useBalance();
 
   useEffect(() => {
@@ -28,13 +33,18 @@ export default function Markets() {
     fetchMarkets();
   }, []);
 
+  useEffect(() => {
+    applyFilters();
+  }, [allMarkets, selectedCategory, searchQuery, sortBy]);
+
   const fetchMarkets = async () => {
     try {
+      setLoading(true);
       const response = await fetch(`${API_URL}/api/markets`);
       const data = await response.json();
       
       if (data.success) {
-        setMarkets(data.markets);
+        setAllMarkets(data.markets);
       }
     } catch (error) {
       console.error('Error fetching markets:', error);
@@ -42,6 +52,45 @@ export default function Markets() {
       setLoading(false);
     }
   };
+
+  const applyFilters = () => {
+    let filtered = [...allMarkets];
+
+    // Category filter
+    if (selectedCategory !== 'All') {
+      filtered = filtered.filter(m => m.category === selectedCategory);
+    }
+
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(m => 
+        m.question.toLowerCase().includes(query) ||
+        m.description.toLowerCase().includes(query)
+      );
+    }
+
+    // Sort
+    if (sortBy === 'volume') {
+      filtered.sort((a, b) => b.volume - a.volume);
+    } else if (sortBy === 'newest') {
+      filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    } else if (sortBy === 'probability') {
+      filtered.sort((a, b) => {
+        const aProb = Math.max(parseFloat(a.outcomePrices[0]), parseFloat(a.outcomePrices[1]));
+        const bProb = Math.max(parseFloat(b.outcomePrices[0]), parseFloat(b.outcomePrices[1]));
+        return bProb - aProb;
+      });
+    }
+
+    setFilteredMarkets(filtered);
+  };
+
+  // Get unique categories
+  const categories = ['All', ...new Set(allMarkets.map(m => m.category))];
+
+  // Calculate stats
+  const totalVolume = allMarkets.reduce((sum, m) => sum + m.volume, 0);
 
   if (!ready || !authenticated) {
     return <div className="min-h-screen bg-black" />;
@@ -54,6 +103,7 @@ export default function Markets() {
         <Navbar />
         
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-8 sm:pb-12">
+          {/* Header */}
           <div className="mb-8 sm:mb-12">
             <button 
               onClick={() => navigate('/dashboard')}
@@ -64,18 +114,92 @@ export default function Markets() {
               </svg>
               Back
             </button>
-            <div className="flex items-center justify-between flex-wrap gap-4">
+            
+            <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
               <div>
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-2 sm:mb-3">Prediction Markets</h2>
-                <p className="text-gray-500 text-sm sm:text-base md:text-lg">Swipe to explore live markets</p>
+                <p className="text-gray-500 text-sm sm:text-base md:text-lg">
+                  {filteredMarkets.length} markets • ${(totalVolume / 1000000).toFixed(1)}M total volume
+                </p>
               </div>
               <div className="card px-4 sm:px-6 py-3 sm:py-4">
                 <p className="text-gray-500 text-xs mb-1">Your Balance</p>
                 <p className="text-white text-2xl sm:text-3xl font-bold">${balance.toFixed(2)}</p>
               </div>
             </div>
+
+            {/* Search Bar */}
+            <div className="mb-6">
+              <div className="relative">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search markets..."
+                  className="w-full bg-white/5 backdrop-blur-xl border border-white/20 rounded-2xl px-5 py-3 sm:py-4 pl-12 text-white placeholder-gray-500 focus:outline-none focus:border-white/40 transition text-sm sm:text-base"
+                />
+                <svg className="w-5 h-5 text-gray-500 absolute left-4 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Category Filters */}
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide mb-6">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
+                  className={`px-4 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition ${
+                    selectedCategory === category
+                      ? 'bg-white text-black'
+                      : 'bg-white/10 text-gray-400 hover:bg-white/20'
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+
+            {/* Sort Options */}
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className="text-gray-500 text-xs sm:text-sm">Sort by:</span>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setSortBy('volume')}
+                  className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition ${
+                    sortBy === 'volume'
+                      ? 'bg-white/20 text-white'
+                      : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                  }`}
+                >
+                  Volume
+                </button>
+                <button
+                  onClick={() => setSortBy('newest')}
+                  className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition ${
+                    sortBy === 'newest'
+                      ? 'bg-white/20 text-white'
+                      : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                  }`}
+                >
+                  Newest
+                </button>
+                <button
+                  onClick={() => setSortBy('probability')}
+                  className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition ${
+                    sortBy === 'probability'
+                      ? 'bg-white/20 text-white'
+                      : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                  }`}
+                >
+                  Probability
+                </button>
+              </div>
+            </div>
           </div>
 
+          {/* Markets Display */}
           {loading ? (
             <div className="flex items-center justify-center py-20">
               <div className="flex flex-col items-center gap-4">
@@ -86,15 +210,35 @@ export default function Markets() {
                 <p className="text-gray-500 text-sm">Loading markets...</p>
               </div>
             </div>
-          ) : markets.length === 0 ? (
+          ) : filteredMarkets.length === 0 ? (
             <div className="card text-center py-12">
-              <p className="text-gray-500">No markets available</p>
+              <div className="text-5xl mb-4">🔍</div>
+              <h3 className="text-white text-xl font-bold mb-2">No Markets Found</h3>
+              <p className="text-gray-500 mb-6">Try adjusting your filters or search query</p>
+              <button
+                onClick={() => {
+                  setSelectedCategory('All');
+                  setSearchQuery('');
+                }}
+                className="btn-secondary inline-block"
+              >
+                Clear Filters
+              </button>
             </div>
           ) : (
-            <MarketCarousel 
-              markets={markets} 
-              onSelectMarket={setSelectedMarket}
-            />
+            <>
+              <MarketCarousel 
+                markets={filteredMarkets} 
+                onSelectMarket={setSelectedMarket}
+              />
+              
+              {/* Results Summary */}
+              <div className="text-center mt-8">
+                <p className="text-gray-500 text-sm">
+                  Showing {filteredMarkets.length} of {allMarkets.length} markets
+                </p>
+              </div>
+            </>
           )}
         </div>
       </div>

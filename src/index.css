@@ -617,3 +617,13 @@ body {
     transform: scale(1.05);
   }
 }
+
+/* Hide scrollbar for category filters */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

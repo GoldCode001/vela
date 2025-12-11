@@ -1,6 +1,7 @@
 export async function getHotMarkets() {
   try {
-    const response = await fetch('https://gamma-api.polymarket.com/events?limit=50&closed=false', {
+    // Fetch 100 markets instead of 50
+    const response = await fetch('https://gamma-api.polymarket.com/events?limit=100&closed=false', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -41,7 +42,6 @@ export async function getHotMarkets() {
         if (!Array.isArray(prices) || prices.length !== 2) continue;
         if (parseFloat(prices[0]) === 0 && parseFloat(prices[1]) === 0) continue;
         
-        // Get token IDs for trading
         const tokens = market.tokens || [market.clobTokenIds?.[0], market.clobTokenIds?.[1]];
         
         markets.push({
@@ -56,14 +56,17 @@ export async function getHotMarkets() {
             parseFloat(prices[0]).toFixed(4),
             parseFloat(prices[1]).toFixed(4)
           ],
-          tokens: tokens, // IMPORTANT: Token IDs for trading
+          tokens: tokens,
           conditionId: market.conditionId,
+          endDate: market.endDate || event.endDate || null,
+          createdAt: market.createdAt || event.createdAt || null,
         });
         
-        if (markets.length >= 10) break;
+        // Get up to 100 markets now
+        if (markets.length >= 100) break;
       }
       
-      if (markets.length >= 10) break;
+      if (markets.length >= 100) break;
     }
 
     console.log('Valid markets found:', markets.length);
