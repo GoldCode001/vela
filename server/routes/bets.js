@@ -1,6 +1,6 @@
 import express from 'express';
 import { supabase } from '../config/supabase.js';
-import { createClobClient, getOrderBook, placeBuyOrder } from '../services/polymarket-trading.js';
+import { createClobClient, placeBuyOrder } from '../services/polymarket-trading.js';
 
 const router = express.Router();
 
@@ -8,7 +8,6 @@ router.post('/place', async (req, res) => {
   try {
     const { walletAddress, marketId, marketQuestion, outcome, amount, privateKey, tokenIds } = req.body;
     
-    // Validate inputs
     if (!walletAddress || !marketId || outcome === undefined || !amount) {
       return res.status(400).json({ 
         success: false, 
@@ -18,7 +17,6 @@ router.post('/place', async (req, res) => {
 
     const betAmount = parseFloat(amount);
     
-    // Get user from database
     const { data: user } = await supabase
       .from('users')
       .select('id')
@@ -33,49 +31,39 @@ router.post('/place', async (req, res) => {
     }
 
     let tradeResult = null;
-    let entryPrice = 0.50; // Default
+    let entryPrice = 0.50;
     let shares = betAmount / entryPrice;
 
-    // Execute real trade if private key provided
+    // Execute REAL trade if private key and tokens provided
     if (privateKey && tokenIds && tokenIds.length > 0) {
       try {
-        console.log('🚀 Executing real trade...');
+        console.log('🚀 Executing REAL Polymarket trade...');
         
-        const tokenId = tokenIds[outcome]; // Get token for selected outcome
+        const tokenId = tokenIds[outcome];
+        
+        if (!tokenId) {
+          throw new Error('Token ID not found for selected outcome');
+        }
         
         // Initialize CLOB client
         const clobClient = createClobClient(privateKey);
         
-        // Get current market price
-        const orderbook = await getOrderBook(tokenId);
-        
-        if (!orderbook || !orderbook.bids || orderbook.bids.length === 0) {
-          throw new Error('No liquidity available');
-        }
-        
-        const currentPrice = parseFloat(orderbook.bids[0].price);
-        
         // Place buy order
-        tradeResult = await placeBuyOrder(
-          clobClient,
-          tokenId,
-          betAmount,
-          currentPrice
-        );
+        tradeResult = await placeBuyOrder(clobClient, tokenId, betAmount);
         
         entryPrice = tradeResult.price;
         shares = tradeResult.shares;
         
         console.log('✅ REAL TRADE EXECUTED:', tradeResult);
       } catch (tradeError) {
-        console.error('❌ Trade failed:', tradeError);
+        console.error('❌ Trade execution failed:', tradeError);
         return res.status(500).json({
           success: false,
-          error: 'Trade execution failed: ' + tradeError.message,
+          error: `Trade failed: ${tradeError.message}`,
         });
       }
     } else {
-      console.log('⚠️ SIMULATED TRADE (no private key)');
+      console.log('⚠️ SIMULATED TRADE (missing privateKey or tokens)');
     }
     
     // Record position in database
@@ -96,7 +84,7 @@ router.post('/place', async (req, res) => {
     
     res.json({ 
       success: true,
-      message: 'Bet placed successfully!',
+      message: tradeResult ? 'Real bet placed on Polymarket!' : 'Bet placed (simulated)',
       trade: {
         shares: shares.toFixed(4),
         entryPrice: entryPrice.toFixed(4),

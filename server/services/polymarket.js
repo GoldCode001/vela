@@ -1,6 +1,5 @@
 export async function getHotMarkets() {
   try {
-    // Try the events endpoint which has more active markets
     const response = await fetch('https://gamma-api.polymarket.com/events?limit=50&closed=false', {
       method: 'GET',
       headers: {
@@ -22,17 +21,14 @@ export async function getHotMarkets() {
       return [];
     }
 
-    // Filter and map markets from events
     const markets = [];
     
     for (const event of data) {
       if (!event.markets || event.markets.length === 0) continue;
       
       for (const market of event.markets) {
-        // Skip closed markets
         if (market.closed || !market.active) continue;
         
-        // Parse outcome prices (they're strings)
         let prices;
         try {
           prices = typeof market.outcomePrices === 'string' 
@@ -42,18 +38,17 @@ export async function getHotMarkets() {
           continue;
         }
         
-        // Skip if no valid prices
         if (!Array.isArray(prices) || prices.length !== 2) continue;
         if (parseFloat(prices[0]) === 0 && parseFloat(prices[1]) === 0) continue;
         
-        // Log images to see what we're getting
-        console.log('Market:', market.question, 'Image:', market.image || event.image || 'NO IMAGE');
+        // Get token IDs for trading
+        const tokens = market.tokens || [market.clobTokenIds?.[0], market.clobTokenIds?.[1]];
         
         markets.push({
           id: market.id || market.conditionId || Math.random().toString(),
           question: market.question || event.title,
           description: market.description || event.description || '',
-          image: market.image || event.image || market.icon || event.icon || '', // TRY ALL IMAGE FIELDS
+          image: market.image || event.image || market.icon || event.icon || '',
           volume: parseFloat(market.volume || market.volumeNum || 0),
           category: event.category || 'Other',
           outcomes: ['Yes', 'No'],
@@ -61,6 +56,8 @@ export async function getHotMarkets() {
             parseFloat(prices[0]).toFixed(4),
             parseFloat(prices[1]).toFixed(4)
           ],
+          tokens: tokens, // IMPORTANT: Token IDs for trading
+          conditionId: market.conditionId,
         });
         
         if (markets.length >= 10) break;
@@ -70,7 +67,6 @@ export async function getHotMarkets() {
     }
 
     console.log('Valid markets found:', markets.length);
-    console.log('Markets with images:', markets.filter(m => m.image).length);
     return markets;
     
   } catch (error) {

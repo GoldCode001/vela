@@ -6,15 +6,20 @@ const POLYGON_RPC = 'https://polygon-rpc.com';
 
 // Initialize CLOB client with user's private key
 export function createClobClient(privateKey) {
-  const wallet = new ethers.Wallet(privateKey);
-  const provider = new ethers.providers.JsonRpcProvider(POLYGON_RPC);
-  const signer = wallet.connect(provider);
+  try {
+    const wallet = new ethers.Wallet(privateKey);
+    const provider = new ethers.providers.JsonRpcProvider(POLYGON_RPC);
+    const signer = wallet.connect(provider);
 
-  return new ClobClient(
-    CLOB_API_URL,
-    137, // Polygon chain ID
-    signer
-  );
+    return new ClobClient(
+      CLOB_API_URL,
+      137, // Polygon chain ID
+      signer
+    );
+  } catch (error) {
+    console.error('Error creating CLOB client:', error);
+    throw error;
+  }
 }
 
 // Get market orderbook
@@ -30,20 +35,29 @@ export async function getOrderBook(tokenId) {
 }
 
 // Place market buy order
-export async function placeBuyOrder(clobClient, tokenId, amount, price) {
+export async function placeBuyOrder(clobClient, tokenId, amountUSD) {
   try {
+    // Get current best price
+    const orderbook = await getOrderBook(tokenId);
+    
+    if (!orderbook || !orderbook.asks || orderbook.asks.length === 0) {
+      throw new Error('No liquidity available for this market');
+    }
+    
+    const bestAsk = parseFloat(orderbook.asks[0].price);
+    
     // Calculate shares to buy
-    const shares = amount / price;
+    const shares = amountUSD / bestAsk;
+    
+    console.log(`📊 Placing order: ${shares.toFixed(4)} shares at $${bestAsk}`);
     
     const order = {
       tokenID: tokenId,
-      price: price.toString(),
+      price: bestAsk.toString(),
       size: shares.toString(),
       side: 'BUY',
       feeRateBps: '0',
     };
-    
-    console.log('📝 Creating order:', order);
     
     const result = await clobClient.createOrder(order);
     
@@ -51,24 +65,12 @@ export async function placeBuyOrder(clobClient, tokenId, amount, price) {
     
     return {
       orderId: result.orderID,
-      price: price,
+      price: bestAsk,
       shares: shares,
-      cost: amount,
+      cost: amountUSD,
     };
   } catch (error) {
     console.error('❌ Order failed:', error);
     throw error;
-  }
-}
-
-// Get user's positions from Polymarket
-export async function getUserPositions(walletAddress) {
-  try {
-    const response = await fetch(`${CLOB_API_URL}/positions?user=${walletAddress}`);
-    const data = await response.json();
-    return data || [];
-  } catch (error) {
-    console.error('Error fetching positions:', error);
-    return [];
   }
 }

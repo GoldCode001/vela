@@ -29,14 +29,17 @@ export default function BettingModal({ market, onClose, userBalance, onBalanceUp
     setLoading(true);
 
     try {
-      // Get private key from Privy
+      // Get private key from Privy (user must approve)
+      console.log('🔐 Requesting wallet export...');
       const privateKey = await getPrivateKey();
       
       if (!privateKey) {
         throw new Error('Could not access wallet');
       }
 
-      // Execute trade on backend
+      console.log('✅ Wallet exported, executing trade...');
+
+      // Execute real trade
       const response = await fetch(`${API_URL}/api/bets/place`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -47,7 +50,7 @@ export default function BettingModal({ market, onClose, userBalance, onBalanceUp
           outcome: selectedOutcome,
           amount: betAmount,
           privateKey: privateKey,
-          tokenIds: market.tokens || [], // Token IDs for Yes/No outcomes
+          tokenIds: market.tokens || [],
         }),
       });
 
@@ -57,7 +60,11 @@ export default function BettingModal({ market, onClose, userBalance, onBalanceUp
         throw new Error(data.error || 'Trade failed');
       }
 
-      alert(`✅ Bet placed! You got ${data.trade.shares} shares at $${data.trade.entryPrice}`);
+      if (data.trade.real) {
+        alert(`✅ REAL BET PLACED!\n\nYou got ${data.trade.shares} shares at $${data.trade.entryPrice}\n\nOrder ID: ${data.trade.orderId}`);
+      } else {
+        alert(`⚠️ Bet recorded but trade was simulated\n\nShares: ${data.trade.shares}`);
+      }
       
       // Refresh balance
       onBalanceUpdate();
@@ -69,6 +76,8 @@ export default function BettingModal({ market, onClose, userBalance, onBalanceUp
       setLoading(false);
     }
   };
+
+  // ... rest of component stays the same
 
   if (showFunding) {
     return (
