@@ -1,6 +1,6 @@
 import { usePrivy } from '@privy-io/react-auth';
 import { useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react'; // ADD useMemo
 import Navbar from '../components/Navbar.jsx';
 import AnimatedBackground from '../components/AnimatedBackground.jsx';
 import RampWidget from '../components/RampWidget.jsx';
@@ -13,8 +13,13 @@ export default function Dashboard() {
   const { balance, maticBalance, loading, refresh } = useBalance();
   const [showRamp, setShowRamp] = useState(false);
 
-  const wallet = user?.linkedAccounts?.find(account => account.type === 'wallet');
+  // FIX: Memoize wallet so it doesn't cause re-renders
+  const wallet = useMemo(() => 
+    user?.linkedAccounts?.find(account => account.type === 'wallet'),
+    [user]
+  );
 
+ 
   useEffect(() => {
     if (ready && !authenticated) {
       navigate('/');
