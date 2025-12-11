@@ -1,8 +1,9 @@
 import { usePrivy } from '@privy-io/react-auth';
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar.jsx';
 import AnimatedBackground from '../components/AnimatedBackground.jsx';
+import RampWidget from '../components/RampWidget.jsx';
 import { useBalance } from '../hooks/useBalance';
 import { supabase } from '../lib/supabase';
 
@@ -10,6 +11,9 @@ export default function Dashboard() {
   const { ready, authenticated, user } = usePrivy();
   const navigate = useNavigate();
   const { balance, maticBalance, loading, refresh } = useBalance();
+  const [showRamp, setShowRamp] = useState(false);
+
+  const wallet = user?.linkedAccounts?.find(account => account.type === 'wallet');
 
   useEffect(() => {
     if (ready && !authenticated) {
@@ -52,19 +56,6 @@ export default function Dashboard() {
       </div>
     );
   }
-
-  <div className="flex gap-4 mb-8">
-    <button
-      onClick={() => navigate('/portfolio')}
-      className="card px-6 py-4 glass-hover cursor-pointer flex items-center gap-3"
-    >
-      <span className="text-2xl">📊</span>
-      <div className="text-left">
-        <p className="text-white font-semibold">View Portfolio</p>
-        <p className="text-gray-500 text-xs">Track your bets</p>
-      </div>
-    </button>
-  </div>
 
   const verticals = [
     {
@@ -109,6 +100,20 @@ export default function Dashboard() {
           <p className="text-gray-500 text-base sm:text-lg">Your web3 gateway</p>
         </div>
 
+        {/* Quick Actions */}
+        <div className="flex gap-4 mb-8">
+          <button
+            onClick={() => navigate('/portfolio')}
+            className="card px-6 py-4 glass-hover cursor-pointer flex items-center gap-3"
+          >
+            <span className="text-2xl">📊</span>
+            <div className="text-left">
+              <p className="text-white font-semibold">View Portfolio</p>
+              <p className="text-gray-500 text-xs">Track your bets</p>
+            </div>
+          </button>
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-12 sm:mb-16">
           <div className="card">
             <p className="text-gray-600 text-xs font-medium uppercase tracking-wider mb-2 sm:mb-3">Balance</p>
@@ -116,9 +121,7 @@ export default function Dashboard() {
               ${balance.toFixed(2)}
             </p>
             <button 
-              onClick={() => {
-                alert('Ramp integration coming soon! This will open card payment to add USDC to your wallet.');
-              }}
+              onClick={() => setShowRamp(true)}
               className="text-gray-500 hover:text-white text-xs transition mt-2 cursor-pointer"
             >
               Add funds →
@@ -163,6 +166,25 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* Ramp Widget */}
+      {showRamp && wallet?.address && (
+        <RampWidget
+          walletAddress={wallet.address}
+          onClose={() => {
+            setShowRamp(false);
+            // Refresh balance after closing (user might have added funds)
+            setTimeout(() => refresh(), 2000);
+          }}
+          onSuccess={(event) => {
+            console.log('🎉 Ramp purchase successful!', event);
+            // Refresh balance immediately
+            refresh();
+            setShowRamp(false);
+            alert('✅ Funds added successfully! Your balance will update in a few seconds.');
+          }}
+        />
+      )}
     </div>
   );
 }
