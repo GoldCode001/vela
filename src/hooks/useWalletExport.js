@@ -2,62 +2,33 @@ import { usePrivy } from '@privy-io/react-auth';
 import { useState } from 'react';
 
 export function useWalletExport() {
-  const { exportWallet } = usePrivy();
-  const [exporting, setExporting] = useState(false);
+  const { exportWallet } = usePrivy();  // ✅ Gets exportWallet from Privy
+  const [exporting, setExporting] = useState(false);  // ✅ Loading state
 
   const getPrivateKey = async () => {
     try {
-      setExporting(true);
+      setExporting(true);  // ✅ Set loading
       
-      // Request wallet export from Privy
+      // ✅ Request wallet export from Privy (user must approve popup)
       const wallet = await exportWallet();
       
-      if (!wallet || !wallet.privateKey) {
-        throw new Error('Failed to export wallet');
-      }import { usePrivy } from '@privy-io/react-auth';
-import { useState } from 'react';
-
-export function useWalletExport() {
-  const { exportWallet } = usePrivy();
-  const [exporting, setExporting] = useState(false);
-
-  const getPrivateKey = async () => {
-    try {
-      setExporting(true);
-      
-      // Request wallet export from Privy
-      const wallet = await exportWallet();
-      
+      // ✅ Validate we got the private key
       if (!wallet || !wallet.privateKey) {
         throw new Error('Failed to export wallet');
       }
       
+      // ✅ Return the private key
       return wallet.privateKey;
     } catch (error) {
       console.error('Wallet export error:', error);
-      throw new Error('Please approve wallet export to place bet');
+      throw new Error('Please approve wallet export to place bet');  // ✅ User-friendly error
     } finally {
-      setExporting(false);
+      setExporting(false);  // ✅ Reset loading
     }
   };
 
   return {
-    getPrivateKey,
-    exporting,
-  };
-}
-      
-      return wallet.privateKey;
-    } catch (error) {
-      console.error('Wallet export error:', error);
-      throw new Error('Please approve wallet export to place bet');
-    } finally {
-      setExporting(false);
-    }
-  };
-
-  return {
-    getPrivateKey,
-    exporting,
+    getPrivateKey,  // ✅ Function to call
+    exporting,      // ✅ Loading state
   };
 }
