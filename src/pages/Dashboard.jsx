@@ -120,6 +120,14 @@ export default function Dashboard() {
       color: 'from-blue-500/20 to-purple-500/20'
     },
     {
+      id: 'education',
+      icon: '📚',
+      title: 'Education',
+      description: 'Learn Web3 essentials',
+      available: false,
+      color: 'from-purple-500/20 to-pink-500/20'
+    },
+    {
       id: 'creators',
       icon: '🎨',
       title: 'Creators',
@@ -178,9 +186,9 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {/* Verification Alert - Only show if NOT verified */}
+        {/* Verification Alert */}
         {!checkingVerification && !isVerified && (
-          <div className="card mb-8 p-4 sm:p-6 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20">
+          <div className="glass-card mb-8 p-4 sm:p-6 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/30">
             <div className="flex items-start gap-4">
               <div className="text-3xl">⚠️</div>
               <div className="flex-1">
@@ -190,7 +198,7 @@ export default function Dashboard() {
                 </p>
                 <button
                   onClick={handleVerify}
-                  className="btn-primary text-sm"
+                  className="glass-btn text-sm font-semibold"
                 >
                   Verify Now
                 </button>
@@ -201,10 +209,10 @@ export default function Dashboard() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-12 sm:mb-16">
-          <div className="card">
+          <div className="glass-card">
             <div className="flex items-center justify-between mb-3">
               <div>
-                <p className="text-gray-600 text-xs font-medium uppercase tracking-wider">Balance</p>
+                <p className="text-gray-400 text-xs font-medium uppercase tracking-wider">Balance</p>
                 {isVerified && (
                   <span className="text-green-400 text-xs flex items-center gap-1 mt-1">
                     <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
@@ -214,7 +222,7 @@ export default function Dashboard() {
               </div>
               <button 
                 onClick={handleAddFunds}
-                className="text-white text-xs px-3 py-1 bg-white/10 hover:bg-white/20 rounded-full transition"
+                className="glass-btn-sm"
               >
                 Add Funds
               </button>
@@ -222,25 +230,25 @@ export default function Dashboard() {
             <p className="text-white text-3xl sm:text-4xl font-bold mb-1">
               ${balance.toFixed(2)}
             </p>
-            <p className="text-gray-600 text-xs">Universal wallet balance</p>
+            <p className="text-gray-500 text-xs">Universal wallet balance</p>
             {maticBalance < 0.01 && (
-              <p className="text-xs text-yellow-500 mt-2">
+              <p className="text-xs text-yellow-400 mt-2">
                 ⚠️ Low gas - transactions may fail
               </p>
             )}
           </div>
 
-          <div className="card">
-            <p className="text-gray-600 text-xs font-medium uppercase tracking-wider mb-3">Activity</p>
+          <div className="glass-card">
+            <p className="text-gray-400 text-xs font-medium uppercase tracking-wider mb-3">Activity</p>
             <p className="text-white text-3xl sm:text-4xl font-bold mb-1">0</p>
-            <p className="text-gray-600 text-xs">Total transactions</p>
+            <p className="text-gray-500 text-xs">Total transactions</p>
           </div>
 
-          <div className="card">
-            <p className="text-gray-600 text-xs font-medium uppercase tracking-wider mb-3">Portfolio</p>
+          <div className="glass-card">
+            <p className="text-gray-400 text-xs font-medium uppercase tracking-wider mb-3">Portfolio</p>
             <button
               onClick={() => navigate('/portfolio')}
-              className="text-white text-sm hover:text-gray-300 transition flex items-center gap-2 group"
+              className="text-white text-sm hover:text-gray-300 transition flex items-center gap-2 group font-semibold"
             >
               View Details
               <svg className="w-4 h-4 group-hover:translate-x-1 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -270,11 +278,12 @@ export default function Dashboard() {
                 }}
                 disabled={!vertical.available && !vertical.onClick}
                 className={`
-                  card text-left relative overflow-hidden group
+                  glass-card text-left relative overflow-hidden group
                   ${vertical.available || vertical.onClick
-                    ? 'glass-hover cursor-pointer' 
+                    ? 'hover:scale-[1.02] cursor-pointer' 
                     : 'cursor-not-allowed opacity-60'
                   }
+                  transition-all duration-300
                 `}
               >
                 <div className={`absolute inset-0 bg-gradient-to-br ${vertical.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
@@ -283,7 +292,7 @@ export default function Dashboard() {
                   <div className="flex items-start justify-between mb-4">
                     <div className="text-5xl sm:text-6xl">{vertical.icon}</div>
                     {!vertical.available && !vertical.onClick && (
-                      <span className="stat-badge text-xs">Soon</span>
+                      <span className="stat-badge text-xs font-semibold">Soon</span>
                     )}
                     {(vertical.available || vertical.onClick) && (
                       <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
@@ -298,7 +307,7 @@ export default function Dashboard() {
                   </p>
 
                   {(vertical.available || vertical.onClick) && (
-                    <div className="flex items-center gap-2 text-white text-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-2 text-white text-sm opacity-0 group-hover:opacity-100 transition-opacity font-semibold">
                       Launch
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -312,23 +321,23 @@ export default function Dashboard() {
         </div>
 
         {/* Platform Stats */}
-        <div className="mt-12 sm:mt-16 card p-6 sm:p-8">
+        <div className="mt-12 sm:mt-16 glass-card p-6 sm:p-8">
           <h4 className="text-white text-lg sm:text-xl font-bold mb-6">Platform Stats</h4>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
             <div>
-              <p className="text-gray-600 text-xs uppercase tracking-wider mb-2">Total Users</p>
+              <p className="text-gray-400 text-xs uppercase tracking-wider mb-2 font-medium">Total Users</p>
               <p className="text-white text-2xl font-bold">-</p>
             </div>
             <div>
-              <p className="text-gray-600 text-xs uppercase tracking-wider mb-2">Volume</p>
+              <p className="text-gray-400 text-xs uppercase tracking-wider mb-2 font-medium">Volume</p>
               <p className="text-white text-2xl font-bold">-</p>
             </div>
             <div>
-              <p className="text-gray-600 text-xs uppercase tracking-wider mb-2">Active Now</p>
+              <p className="text-gray-400 text-xs uppercase tracking-wider mb-2 font-medium">Active Now</p>
               <p className="text-white text-2xl font-bold">-</p>
             </div>
             <div>
-              <p className="text-gray-600 text-xs uppercase tracking-wider mb-2">Markets</p>
+              <p className="text-gray-400 text-xs uppercase tracking-wider mb-2 font-medium">Markets</p>
               <p className="text-white text-2xl font-bold">100+</p>
             </div>
           </div>
