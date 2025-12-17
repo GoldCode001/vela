@@ -627,3 +627,36 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Floating beam animation */
+@keyframes floatBeam {
+  0%, 100% {
+    transform: translateX(0) translateY(0);
+    opacity: 0.3;
+  }
+  25% {
+    transform: translateX(30px) translateY(-20px);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateX(-20px) translateY(20px);
+    opacity: 0.4;
+  }
+  75% {
+    transform: translateX(20px) translateY(-10px);
+    opacity: 0.5;
+  }
+}
+
+/* Floating orb animation */
+@keyframes floatOrb {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(50px, -30px) scale(1.1);
+  }
+  66% {
+    transform: translate(-30px, 40px) scale(0.9);
+  }
+}
