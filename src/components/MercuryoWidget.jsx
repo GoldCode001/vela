@@ -1,49 +1,36 @@
-import { useEffect } from 'react';
-
 export default function MercuryoWidget({ walletAddress, onClose, onSuccess, verifyOnly = false }) {
-  useEffect(() => {
-    // Build Mercuryo URL
-    const params = new URLSearchParams({
-      widget_id: 'c76d29cd-02e8-4ae6-8f99-6191d36ec5c3',
-      type: 'buy',
-      currency: 'USDC',
-      network: 'POLYGON',
-      address: walletAddress,
-      amount: verifyOnly ? '10' : '20',
-      fiat_currency: 'USD',
-      theme: 'dark',
-      return_url: window.location.origin + '/dashboard',
-    });
+  // Direct Mercuryo URL - NO widget_id needed for iframe!
+  const mercuryoUrl = `https://exchange.mercuryo.io/?currency=USDC&amount=${verifyOnly ? '10' : '100'}&address=${walletAddress}&network=POLYGON&type=buy&fiat_currency=USD&theme=dark`;
 
-    const mercuryoUrl = `https://exchange.mercuryo.io/?${params.toString()}`;
-    
-    // Open in new tab
-    window.open(mercuryoUrl, '_blank');
-    
-    // Close immediately and call success
-    setTimeout(() => {
-      if (onSuccess) {
-        onSuccess();
-      }
-      onClose();
-    }, 500);
-  }, [walletAddress, onClose, onSuccess, verifyOnly]);
-
-  // Show a modal with instructions
   return (
-    <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="card p-8 max-w-md text-center">
-        <div className="text-5xl mb-4">💳</div>
-        <h3 className="text-2xl font-bold text-white mb-4">Opening Mercuryo...</h3>
-        <p className="text-gray-400 mb-6">
-          A new tab has opened for you to complete the purchase. Return here when done!
-        </p>
+    <div 
+      className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div 
+        className="relative w-full max-w-lg bg-white rounded-3xl overflow-hidden shadow-2xl" 
+        style={{ height: '90vh', maxHeight: '700px' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close Button */}
         <button
           onClick={onClose}
-          className="btn-secondary w-full"
+          className="absolute top-4 right-4 z-10 w-10 h-10 bg-black/20 hover:bg-black/40 rounded-full flex items-center justify-center transition"
         >
-          Close
+          <span className="text-white text-2xl font-bold">×</span>
         </button>
+
+        {/* Mercuryo Iframe */}
+        <iframe
+          src={mercuryoUrl}
+          title="Buy Crypto"
+          style={{ 
+            width: '100%', 
+            height: '100%',
+            border: 'none',
+          }}
+          allow="payment; camera; microphone"
+        />
       </div>
     </div>
   );
