@@ -1,9 +1,9 @@
 import { usePrivy } from '@privy-io/react-auth';
 import { useNavigate } from 'react-router-dom';
-import { useEffect, useState, useMemo } from 'react'; // ADD useMemo
+import { useEffect, useState, useMemo } from 'react';
 import Navbar from '../components/Navbar.jsx';
 import AnimatedBackground from '../components/AnimatedBackground.jsx';
-import RampWidget from '../components/RampWidget.jsx';
+import MercuryoWidget from '../components/MercuryoWidget.jsx';
 import { useBalance } from '../hooks/useBalance';
 import { supabase } from '../lib/supabase';
 
@@ -11,15 +11,16 @@ export default function Dashboard() {
   const { ready, authenticated, user } = usePrivy();
   const navigate = useNavigate();
   const { balance, maticBalance, loading, refresh } = useBalance();
-  const [showRamp, setShowRamp] = useState(false);
+  const [showMercuryo, setShowMercuryo] = useState(false);
+  const [verifyMode, setVerifyMode] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
+  const [checkingVerification, setCheckingVerification] = useState(true);
 
-  // FIX: Memoize wallet so it doesn't cause re-renders
   const wallet = useMemo(() => 
     user?.linkedAccounts?.find(account => account.type === 'wallet'),
     [user]
   );
 
- 
   useEffect(() => {
     if (ready && !authenticated) {
       navigate('/');
@@ -27,16 +28,11 @@ export default function Dashboard() {
   }, [ready, authenticated, navigate]);
 
   useEffect(() => {
-    if (user) {
-      const wallet = user.linkedAccounts?.find(
-        account => account.type === 'wallet'
-      );
-      
-      if (wallet) {
-        saveUserToDatabase(wallet.address, user.email?.address);
-      }
+    if (user && wallet) {
+      saveUserToDatabase(wallet.address, user.email?.address);
+      checkVerificationStatus(wallet.address);
     }
-  }, [user]);
+  }, [user, wallet]);
 
   const saveUserToDatabase = async (address, email) => {
     const { error } = await supabase
@@ -49,6 +45,55 @@ export default function Dashboard() {
       });
     
     if (error) console.error('Error saving user:', error);
+  };
+
+  const checkVerificationStatus = async (address) => {
+    try {
+      setCheckingVerification(true);
+      const { data, error } = await supabase
+        .from('users')
+        .select('mercuryo_verified')
+        .eq('wallet_address', address)
+        .single();
+      
+      if (!error && data) {
+        setIsVerified(data.mercuryo_verified || false);
+      }
+    } catch (error) {
+      console.error('Error checking verification:', error);
+    } finally {
+      setCheckingVerification(false);
+    }
+  };
+
+  const markAsVerified = async () => {
+    if (!wallet?.address) return;
+    
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({
+          mercuryo_verified: true,
+          verified_at: new Date().toISOString(),
+        })
+        .eq('wallet_address', wallet.address);
+      
+      if (!error) {
+        setIsVerified(true);
+      }
+    } catch (error) {
+      console.error('Error marking verified:', error);
+    }
+  };
+
+  const handleVerify = () => {
+    setVerifyMode(true);
+    setShowMercuryo(true);
+  };
+
+  const handleAddFunds = () => {
+    setVerifyMode(false);
+    setShowMercuryo(true);
   };
 
   if (!ready || !authenticated || loading) {
@@ -130,13 +175,42 @@ export default function Dashboard() {
           </p>
         </div>
 
+        {/* Verification Alert - Only show if NOT verified */}
+        {!checkingVerification && !isVerified && (
+          <div className="card mb-8 p-4 sm:p-6 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20">
+            <div className="flex items-start gap-4">
+              <div className="text-3xl">⚠️</div>
+              <div className="flex-1">
+                <h3 className="text-white font-bold text-lg mb-2">Verify Your Account</h3>
+                <p className="text-gray-300 text-sm mb-4">
+                  Complete quick verification (2-5 mins) to enable instant purchases. You only need to do this once!
+                </p>
+                <button
+                  onClick={handleVerify}
+                  className="btn-primary text-sm"
+                >
+                  Verify Now
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-12 sm:mb-16">
           <div className="card">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-gray-600 text-xs font-medium uppercase tracking-wider">Balance</p>
+              <div>
+                <p className="text-gray-600 text-xs font-medium uppercase tracking-wider">Balance</p>
+                {isVerified && (
+                  <span className="text-green-400 text-xs flex items-center gap-1 mt-1">
+                    <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                    Verified - Instant Purchases
+                  </span>
+                )}
+              </div>
               <button 
-                onClick={() => setShowRamp(true)}
+                onClick={handleAddFunds}
                 className="text-white text-xs px-3 py-1 bg-white/10 hover:bg-white/20 rounded-full transition"
               >
                 Add Funds
@@ -194,7 +268,6 @@ export default function Dashboard() {
                   }
                 `}
               >
-                {/* Gradient Background */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${vertical.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
                 
                 <div className="relative z-10">
@@ -229,7 +302,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Quick Stats */}
+        {/* Platform Stats */}
         <div className="mt-12 sm:mt-16 card p-6 sm:p-8">
           <h4 className="text-white text-lg sm:text-xl font-bold mb-6">Platform Stats</h4>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
@@ -253,19 +326,17 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Ramp Widget */}
-      {showRamp && wallet?.address && (
-        <RampWidget
+      {/* Mercuryo Widget */}
+      {showMercuryo && wallet?.address && (
+        <MercuryoWidget
           walletAddress={wallet.address}
-          onClose={() => {
-            setShowRamp(false);
-            setTimeout(() => refresh(), 2000);
-          }}
-          onSuccess={(event) => {
-            console.log('🎉 Ramp purchase successful!', event);
+          verifyOnly={verifyMode}
+          onClose={() => setShowMercuryo(false)}
+          onSuccess={() => {
+            if (verifyMode) {
+              markAsVerified();
+            }
             refresh();
-            setShowRamp(false);
-            alert('✅ Funds added successfully! Your balance will update in a few seconds.');
           }}
         />
       )}
