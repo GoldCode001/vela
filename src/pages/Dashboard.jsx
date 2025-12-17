@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from 'react';
 import Navbar from '../components/Navbar.jsx';
 import AnimatedBackground from '../components/AnimatedBackground.jsx';
 import MercuryoWidget from '../components/MercuryoWidget.jsx';
+import AaveModal from '../components/AaveModal.jsx';
 import { useBalance } from '../hooks/useBalance';
 import { supabase } from '../lib/supabase';
 
@@ -12,6 +13,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { balance, maticBalance, loading, refresh } = useBalance();
   const [showMercuryo, setShowMercuryo] = useState(false);
+  const [showAave, setShowAave] = useState(false);
   const [verifyMode, setVerifyMode] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [checkingVerification, setCheckingVerification] = useState(true);
@@ -145,9 +147,10 @@ export default function Dashboard() {
       id: 'defi',
       icon: '🏦',
       title: 'DeFi',
-      description: 'Lend, borrow, stake',
-      available: false,
-      color: 'from-indigo-500/20 to-blue-500/20'
+      description: 'Earn yield on idle funds',
+      available: true,
+      color: 'from-indigo-500/20 to-blue-500/20',
+      onClick: () => setShowAave(true)
     },
     {
       id: 'social',
@@ -258,11 +261,17 @@ export default function Dashboard() {
             {verticals.map((vertical) => (
               <button
                 key={vertical.id}
-                onClick={() => vertical.available && navigate(vertical.path)}
-                disabled={!vertical.available}
+                onClick={() => {
+                  if (vertical.onClick) {
+                    vertical.onClick();
+                  } else if (vertical.available) {
+                    navigate(vertical.path);
+                  }
+                }}
+                disabled={!vertical.available && !vertical.onClick}
                 className={`
                   card text-left relative overflow-hidden group
-                  ${vertical.available 
+                  ${vertical.available || vertical.onClick
                     ? 'glass-hover cursor-pointer' 
                     : 'cursor-not-allowed opacity-60'
                   }
@@ -273,10 +282,10 @@ export default function Dashboard() {
                 <div className="relative z-10">
                   <div className="flex items-start justify-between mb-4">
                     <div className="text-5xl sm:text-6xl">{vertical.icon}</div>
-                    {!vertical.available && (
+                    {!vertical.available && !vertical.onClick && (
                       <span className="stat-badge text-xs">Soon</span>
                     )}
-                    {vertical.available && (
+                    {(vertical.available || vertical.onClick) && (
                       <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
                     )}
                   </div>
@@ -288,7 +297,7 @@ export default function Dashboard() {
                     {vertical.description}
                   </p>
 
-                  {vertical.available && (
+                  {(vertical.available || vertical.onClick) && (
                     <div className="flex items-center gap-2 text-white text-sm opacity-0 group-hover:opacity-100 transition-opacity">
                       Launch
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -337,6 +346,18 @@ export default function Dashboard() {
               markAsVerified();
             }
             refresh();
+          }}
+        />
+      )}
+
+      {/* Aave Modal */}
+      {showAave && (
+        <AaveModal
+          onClose={() => setShowAave(false)}
+          currentBalance={balance}
+          onSuccess={() => {
+            refresh();
+            setShowAave(false);
           }}
         />
       )}

@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import marketsRouter from './routes/markets.js';
 import betsRouter from './routes/bets.js';
+import aaveRouter from './routes/aave.js';
 
 // Load environment variables
 dotenv.config();
@@ -40,6 +41,7 @@ app.get('/', (req, res) => {
 // API routes
 app.use('/api/markets', marketsRouter);
 app.use('/api/bets', betsRouter);
+app.use('/api/aave', aaveRouter); 
 
 // Error handling
 app.use((err, req, res, next) => {

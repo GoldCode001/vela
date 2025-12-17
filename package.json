@@ -3,6 +3,9 @@
   "name": "vela",
   "private": true,
   "dependencies": {
+    "@1inch/fusion-sdk": "^2.4.3",
+    "@aave/contract-helpers": "^1.36.2",
+    "@aave/math-utils": "^1.36.2",
     "@moonpay/moonpay-react": "^1.10.6",
     "@polymarket/clob-client": "^4.22.8",
     "@privy-io/react-auth": "^3.8.1",
