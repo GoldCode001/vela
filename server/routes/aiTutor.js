@@ -1,6 +1,6 @@
 import express from 'express';
 import { chatWithAI, getConversationStarters } from '../services/aiTutor.js';
-import { supabase } from '../lib/supabase.js';
+import { supabase } from '../config/supabase.js'; // CHANGED FROM ../lib/supabase.js
 
 const router = express.Router();
 
