@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import marketsRouter from './routes/markets.js';
 import betsRouter from './routes/bets.js';
 import aaveRouter from './routes/aave.js';
+import aiTutorRouter from './routes/aiTutor.js';
 
 // Load environment variables
 dotenv.config();
@@ -42,6 +43,7 @@ app.get('/', (req, res) => {
 app.use('/api/markets', marketsRouter);
 app.use('/api/bets', betsRouter);
 app.use('/api/aave', aaveRouter); 
+app.use('/api/ai-tutor', aiTutorRouter);
 
 // Error handling
 app.use((err, req, res, next) => {

@@ -7,6 +7,7 @@ import MercuryoWidget from '../components/MercuryoWidget.jsx';
 import AaveModal from '../components/AaveModal.jsx';
 import { useBalance } from '../hooks/useBalance';
 import { supabase } from '../lib/supabase';
+import AITutorChat from '../components/AITutorChat.jsx';
 
 export default function Dashboard() {
   const { ready, authenticated, user } = usePrivy();
@@ -17,6 +18,7 @@ export default function Dashboard() {
   const [verifyMode, setVerifyMode] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [checkingVerification, setCheckingVerification] = useState(true);
+  const [showAITutor, setShowAITutor] = useState(false);
 
   const wallet = useMemo(() => 
     user?.linkedAccounts?.find(account => account.type === 'wallet'),
@@ -123,9 +125,10 @@ export default function Dashboard() {
       id: 'education',
       icon: '📚',
       title: 'Education',
-      description: 'Learn Web3 essentials',
-      available: false,
-      color: 'from-purple-500/20 to-pink-500/20'
+      description: 'Learn Web3 with AI tutor',
+      available: true,
+      color: 'from-purple-500/20 to-pink-500/20',
+      onClick: () => setShowAITutor(true)
     },
     {
       id: 'creators',
@@ -369,6 +372,9 @@ export default function Dashboard() {
             setShowAave(false);
           }}
         />
+      )}
+      {showAITutor && (
+        <AITutorChat onClose={() => setShowAITutor(false)} />
       )}
     </div>
   );
