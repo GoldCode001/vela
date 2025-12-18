@@ -125,10 +125,19 @@ export default function Dashboard() {
       id: 'education',
       icon: '📚',
       title: 'Education',
-      description: 'Learn Web3 with AI tutor',
+      description: 'Learn with goldman',
       available: true,
       color: 'from-purple-500/20 to-pink-500/20',
       onClick: () => setShowAITutor(true)
+    },
+    {
+      id: 'defi',
+      icon: '🏦',
+      title: 'DeFi',
+      description: 'Earn yield on idle funds',
+      available: true,
+      color: 'from-indigo-500/20 to-blue-500/20',
+      onClick: () => setShowAave(true)
     },
     {
       id: 'creators',
@@ -153,15 +162,6 @@ export default function Dashboard() {
       description: 'Collect digital assets',
       available: false,
       color: 'from-yellow-500/20 to-orange-500/20'
-    },
-    {
-      id: 'defi',
-      icon: '🏦',
-      title: 'DeFi',
-      description: 'Earn yield on idle funds',
-      available: true,
-      color: 'from-indigo-500/20 to-blue-500/20',
-      onClick: () => setShowAave(true)
     },
     {
       id: 'social',
