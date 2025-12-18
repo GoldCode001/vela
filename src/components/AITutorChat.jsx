@@ -156,7 +156,7 @@ export default function AITutorChat({ onClose }) {
                 <div
                   className={`max-w-[85%] sm:max-w-[80%] rounded-xl sm:rounded-2xl p-3 sm:p-3.5 ${
                     msg.role === 'user'
-                      ? 'bg-gradient-to-br from-blue-500/30 to-purple-500/30 border border-white/20'
+                      ? 'bg-white/10 border border-white/20'
                       : 'glass-card'
                   }`}
                 >

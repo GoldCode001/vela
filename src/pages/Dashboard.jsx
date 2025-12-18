@@ -124,66 +124,59 @@ export default function Dashboard() {
   }
 
   const verticals = [
-    {
-      id: 'predictions',
-      icon: '🎯',
-      title: 'Predictions',
-      description: 'Bet on real-world events',
-      path: '/markets',
-      available: true,
-      color: 'from-blue-500/20 to-purple-500/20'
-    },
-    {
-      id: 'education',
-      icon: '📚',
-      title: 'Education',
-      description: 'Learn with goldman',
-      available: true,
-      color: 'from-purple-500/20 to-pink-500/20',
-      onClick: () => setShowAITutor(true)
-    },
-    {
-      id: 'defi',
-      icon: '🏦',
-      title: 'DeFi',
-      description: 'Earn yield on idle funds',
-      available: true,
-      color: 'from-indigo-500/20 to-blue-500/20',
-      onClick: () => setShowAave(true)
-    },
-    {
-      id: 'creators',
-      icon: '🎨',
-      title: 'Creators',
-      description: 'Support & subscribe',
-      available: false,
-      color: 'from-pink-500/20 to-red-500/20'
-    },
-    {
-      id: 'gaming',
-      icon: '🎮',
-      title: 'Gaming',
-      description: 'Play & earn rewards',
-      available: false,
-      color: 'from-green-500/20 to-emerald-500/20'
-    },
-    {
-      id: 'nfts',
-      icon: '💎',
-      title: 'NFTs',
-      description: 'Collect digital assets',
-      available: false,
-      color: 'from-yellow-500/20 to-orange-500/20'
-    },
-    {
-      id: 'social',
-      icon: '💬',
-      title: 'Social',
-      description: 'Connect & chat',
-      available: false,
-      color: 'from-cyan-500/20 to-teal-500/20'
-    },
-  ];
+  {
+    id: 'predictions',
+    icon: '🎯',
+    title: 'Predictions',
+    description: 'Bet on real-world events',
+    path: '/markets',
+    available: true,
+  },
+  {
+    id: 'education',
+    icon: '📚',
+    title: 'Education',
+    description: 'Learn with goldman',
+    available: true,
+    onClick: () => setShowAITutor(true)
+  },
+  {
+    id: 'defi',
+    icon: '🏦',
+    title: 'DeFi',
+    description: 'Earn yield on idle funds',
+    available: true,
+    onClick: () => setShowAave(true)
+  },
+  {
+    id: 'creators',
+    icon: '🎨',
+    title: 'Creators',
+    description: 'Support & subscribe',
+    available: false,
+  },
+  {
+    id: 'gaming',
+    icon: '🎮',
+    title: 'Gaming',
+    description: 'Play & earn rewards',
+    available: false,
+  },
+  {
+    id: 'nfts',
+    icon: '💎',
+    title: 'NFTs',
+    description: 'Collect digital assets',
+    available: false,
+  },
+  {
+    id: 'social',
+    icon: '💬',
+    title: 'Social',
+    description: 'Connect & chat',
+    available: false,
+  },
+];
 
   return (
     <div className="min-h-screen bg-black relative">
@@ -301,7 +294,7 @@ export default function Dashboard() {
                   transition-all duration-300
                 `}
               >
-                <div className={`absolute inset-0 bg-gradient-to-br ${vertical.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
+                
                 
                 <div className="relative z-10">
                   <div className="flex items-start justify-between mb-4">

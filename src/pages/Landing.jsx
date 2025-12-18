@@ -62,7 +62,7 @@ export default function Landing() {
       {/* Navbar */}
       <nav className="relative z-10 flex items-center justify-between px-6 py-6 max-w-7xl mx-auto">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center">
             <span className="text-white font-bold text-xl">V</span>
           </div>
           <span className="text-white text-2xl font-bold">vela</span>
@@ -87,9 +87,7 @@ export default function Landing() {
         <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-white mb-6 leading-tight">
           web3 made
           <br />
-          <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 text-transparent bg-clip-text">
-            actually simple
-          </span>
+          actually simple
         </h1>
         
         <p className="text-gray-400 text-lg sm:text-xl md:text-2xl mb-12 max-w-3xl mx-auto">
@@ -185,7 +183,7 @@ export default function Landing() {
               
               {/* Connector Line */}
               {idx < howItWorks.length - 1 && (
-                <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 bg-gradient-to-r from-white/20 to-transparent" />
+                <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 bg-white/20" />
               )}
             </div>
           ))}
@@ -217,7 +215,7 @@ export default function Landing() {
             {/* Brand */}
             <div>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center">
                   <span className="text-white font-bold text-xl">V</span>
                 </div>
                 <span className="text-white text-2xl font-bold">vela</span>
