@@ -79,7 +79,7 @@ REMEMBER:
 export async function chatWithAI(messages, userId) {
   try {
     const response = await openai.chat.completions.create({
-      model: 'google/gemini-2.0-flash-exp:free', // Free tier - fast responses
+      model: 'google/gemini-3-flash-preview', // Free tier - fast responses
       // For premium users, use: 'google/gemini-2.5-pro'
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
