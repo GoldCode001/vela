@@ -29,17 +29,23 @@ router.post('/chat', async (req, res) => {
       throw new Error(result.error);
     }
 
+    console.log('🤖 AI Response:', result.message); // DEBUG
+
     // Parse buttons from response
-    const buttonRegex = /\[button:(defi|markets|portfolio|dashboard)\]/g;
+    const buttonRegex = /\[button:(defi|markets|portfolio|dashboard)\]/gi;
     const buttons = [];
     let match;
     
     while ((match = buttonRegex.exec(result.message)) !== null) {
-      buttons.push(match[1]);
+      buttons.push(match[1].toLowerCase());
+      console.log('🔘 Found button:', match[1]); // DEBUG
     }
 
     // Remove button tags from message
     const cleanMessage = result.message.replace(buttonRegex, '').trim();
+
+    console.log('✅ Clean message:', cleanMessage); // DEBUG
+    console.log('🔘 Buttons:', buttons); // DEBUG
 
     // Save conversation to DB
     if (walletAddress) {
@@ -58,7 +64,7 @@ router.post('/chat', async (req, res) => {
       buttons: buttons,
     });
   } catch (error) {
-    console.error('Chat error:', error);
+    console.error('❌ Chat error:', error);
     res.status(500).json({
       success: false,
       error: error.message,
