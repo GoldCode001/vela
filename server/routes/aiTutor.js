@@ -1,6 +1,6 @@
 import express from 'express';
 import { chatWithAI, getConversationStarters } from '../services/aiTutor.js';
-import { supabase } from '../config/supabase.js'; // CHANGED FROM ../lib/supabase.js
+import { supabase } from '../config/supabase.js';
 
 const router = express.Router();
 
@@ -29,19 +29,33 @@ router.post('/chat', async (req, res) => {
       throw new Error(result.error);
     }
 
+    // Parse buttons from response
+    const buttonRegex = /\[button:(defi|markets|portfolio|dashboard)\]/g;
+    const buttons = [];
+    let match;
+    
+    while ((match = buttonRegex.exec(result.message)) !== null) {
+      buttons.push(match[1]);
+    }
+
+    // Remove button tags from message
+    const cleanMessage = result.message.replace(buttonRegex, '').trim();
+
     // Save conversation to DB
     if (walletAddress) {
       await supabase.from('ai_conversations').insert({
         wallet_address: walletAddress,
         messages: messages,
-        ai_response: result.message,
+        ai_response: cleanMessage,
+        buttons: buttons,
         tokens_used: result.usage?.total_tokens || 0,
       });
     }
 
     res.json({
       success: true,
-      message: result.message,
+      message: cleanMessage,
+      buttons: buttons,
     });
   } catch (error) {
     console.error('Chat error:', error);

@@ -38,6 +38,18 @@ export default function Dashboard() {
     }
   }, [user, wallet]);
 
+  useEffect(() => {
+    const handleOpenDefi = () => {
+      setShowAave(true);
+    };
+
+    window.addEventListener('openDefi', handleOpenDefi);
+    
+    return () => {
+      window.removeEventListener('openDefi', handleOpenDefi);
+    };
+  }, []);
+
   const saveUserToDatabase = async (address, email) => {
     const { error } = await supabase
       .from('users')

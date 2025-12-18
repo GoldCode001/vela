@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
+import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../config/api';
 
 export default function AITutorChat({ onClose }) {
   const { user } = usePrivy();
+  const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -16,7 +18,8 @@ export default function AITutorChat({ onClose }) {
     fetchStarters();
     setMessages([{
       role: 'assistant',
-      content: "hey, i'm goldman. i'm here to help you understand web3, crypto, and how to use vela. what would you like to know?"
+      content: "hey, i'm goldman. i'm here to help you understand web3, crypto, and how to use vela. what would you like to know?",
+      buttons: []
     }]);
   }, []);
 
@@ -40,10 +43,36 @@ export default function AITutorChat({ onClose }) {
     }
   };
 
+  const handleButtonClick = (buttonType) => {
+    const routes = {
+      defi: () => {
+        onClose();
+        // Trigger DeFi modal - need to pass this up
+        window.dispatchEvent(new CustomEvent('openDefi'));
+      },
+      markets: () => {
+        onClose();
+        navigate('/markets');
+      },
+      portfolio: () => {
+        onClose();
+        navigate('/portfolio');
+      },
+      dashboard: () => {
+        onClose();
+        navigate('/dashboard');
+      },
+    };
+
+    if (routes[buttonType]) {
+      routes[buttonType]();
+    }
+  };
+
   const handleSend = async (text = input) => {
     if (!text.trim() || loading) return;
 
-    const userMessage = { role: 'user', content: text };
+    const userMessage = { role: 'user', content: text, buttons: [] };
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     setInput('');
@@ -65,6 +94,7 @@ export default function AITutorChat({ onClose }) {
         setMessages([...newMessages, {
           role: 'assistant',
           content: data.message,
+          buttons: data.buttons || [],
         }]);
       } else {
         throw new Error(data.error);
@@ -74,6 +104,7 @@ export default function AITutorChat({ onClose }) {
       setMessages([...newMessages, {
         role: 'assistant',
         content: "something went wrong. mind trying that again?",
+        buttons: [],
       }]);
     } finally {
       setLoading(false);
@@ -82,6 +113,16 @@ export default function AITutorChat({ onClose }) {
 
   const handleStarterClick = (starter) => {
     handleSend(starter);
+  };
+
+  const getButtonLabel = (buttonType) => {
+    const labels = {
+      defi: 'Open DeFi',
+      markets: 'View Markets',
+      portfolio: 'My Portfolio',
+      dashboard: 'Go to Dashboard',
+    };
+    return labels[buttonType] || buttonType;
   };
 
   return (
@@ -108,21 +149,39 @@ export default function AITutorChat({ onClose }) {
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3">
           {messages.map((msg, idx) => (
-            <div
-              key={idx}
-              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
+            <div key={idx}>
               <div
-                className={`max-w-[85%] sm:max-w-[80%] rounded-xl sm:rounded-2xl p-3 sm:p-3.5 ${
-                  msg.role === 'user'
-                    ? 'bg-gradient-to-br from-blue-500/30 to-purple-500/30 border border-white/20'
-                    : 'glass-card'
-                }`}
+                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                <p className="text-white text-xs sm:text-sm leading-relaxed whitespace-pre-wrap">
-                  {msg.content}
-                </p>
+                <div
+                  className={`max-w-[85%] sm:max-w-[80%] rounded-xl sm:rounded-2xl p-3 sm:p-3.5 ${
+                    msg.role === 'user'
+                      ? 'bg-gradient-to-br from-blue-500/30 to-purple-500/30 border border-white/20'
+                      : 'glass-card'
+                  }`}
+                >
+                  <p className="text-white text-xs sm:text-sm leading-relaxed whitespace-pre-wrap">
+                    {msg.content}
+                  </p>
+                </div>
               </div>
+
+              {/* Action Buttons */}
+              {msg.buttons && msg.buttons.length > 0 && (
+                <div className="flex justify-start mt-2 ml-1">
+                  <div className="flex flex-wrap gap-2">
+                    {msg.buttons.map((btn, btnIdx) => (
+                      <button
+                        key={btnIdx}
+                        onClick={() => handleButtonClick(btn)}
+                        className="glass-btn-sm text-xs px-3 py-1.5"
+                      >
+                        {getButtonLabel(btn)} →
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           ))}
 
@@ -141,7 +200,7 @@ export default function AITutorChat({ onClose }) {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Starters (show only if no user messages yet) */}
+        {/* Starters */}
         {messages.filter(m => m.role === 'user').length === 0 && (
           <div className="px-4 sm:px-5 pb-3">
             <p className="text-gray-500 text-xs mb-2">quick starts:</p>
