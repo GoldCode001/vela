@@ -138,7 +138,8 @@ export default function Dashboard() {
     title: 'Education',
     description: 'Learn with goldman',
     available: true,
-    onClick: () => setShowAITutor(true)
+    path: '/education', // ADD THIS LINE
+    // REMOVE: onClick: () => setShowAITutor(true)
   },
   {
     id: 'defi',
