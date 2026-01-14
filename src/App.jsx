@@ -3,6 +3,7 @@ import Landing from './pages/Landing.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Markets from './pages/Markets.jsx';
 import Portfolio from './pages/Portfolio.jsx';
+import Education from './pages/Education.jsx';
 
 function App() {
   return (
