@@ -1,30 +1,47 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
+import { API_URL } from '../config/api.js';
 
 export default function CoinbasePayWidget({ walletAddress, onClose, onSuccess, verifyOnly = false }) {
-  // Direct Coinbase Onramp URL - no SDK needed, no session token required
-  const openCoinbaseOnramp = useCallback(() => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const openCoinbaseOnramp = useCallback(async () => {
     if (!walletAddress) return;
 
-    const amount = verifyOnly ? 10 : 50;
+    setLoading(true);
+    setError('');
 
-    // Build Coinbase Onramp URL directly
-    // This bypasses the SDK and session token requirements
-    const params = new URLSearchParams({
-      addresses: JSON.stringify({ [walletAddress]: ['base'] }),
-      assets: JSON.stringify(['USDC']),
-      presetFiatAmount: amount.toString(),
-      defaultPaymentMethod: 'CARD',
-    });
+    try {
+      // Get onramp URL from backend (includes session token)
+      const response = await fetch(`${API_URL}/api/coinbase/session-token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          walletAddress,
+          network: 'base',
+          asset: 'USDC',
+        }),
+      });
 
-    const url = `https://pay.coinbase.com/buy/select-asset?${params.toString()}`;
-    window.open(url, '_blank', 'width=460,height=750');
+      const data = await response.json();
 
-    // Call onSuccess after opening (user completes purchase in popup)
-    if (onSuccess) {
-      // Delay to give user time to complete
-      setTimeout(onSuccess, 1000);
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to get Coinbase URL');
+      }
+
+      // Open Coinbase Onramp in new window
+      window.open(data.url, '_blank', 'width=460,height=750');
+
+      if (onSuccess) {
+        setTimeout(onSuccess, 1000);
+      }
+    } catch (err) {
+      console.error('Coinbase onramp error:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-  }, [walletAddress, verifyOnly, onSuccess]);
+  }, [walletAddress, onSuccess]);
 
   if (!walletAddress) {
     return (
@@ -76,12 +93,17 @@ export default function CoinbasePayWidget({ walletAddress, onClose, onSuccess, v
               : 'Purchase USDC to fund your wallet'}
           </p>
 
+          {error && (
+            <p className="text-red-500 text-sm mb-4">{error}</p>
+          )}
+
           <div className="space-y-4">
             <button
               onClick={openCoinbaseOnramp}
-              className="w-full py-4 px-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors"
+              disabled={loading}
+              className="w-full py-4 px-6 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold rounded-xl transition-colors"
             >
-              Buy with Coinbase
+              {loading ? 'Loading...' : 'Buy with Coinbase'}
             </button>
           </div>
 

@@ -7,6 +7,7 @@ import aaveRouter from './routes/aave.js';
 import aiTutorRouter from './routes/aiTutor.js';
 import bridgeRouter from './routes/bridge.js';
 import polygonRpcRouter from './routes/polygon-rpc.js';
+import coinbaseOnrampRouter from './routes/coinbase-onramp.js';
 
 // Load environment variables
 dotenv.config();
@@ -59,6 +60,7 @@ app.use('/api/aave', aaveRouter);
 app.use('/api/ai-tutor', aiTutorRouter);
 app.use('/api/bridge', bridgeRouter);
 app.use('/api/polygon-rpc', polygonRpcRouter);
+app.use('/api/coinbase', coinbaseOnrampRouter);
 
 // Error handling
 app.use((err, req, res, next) => {

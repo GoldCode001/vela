@@ -8,7 +8,9 @@
       "Bash(npm install:*)",
       "Bash(npm uninstall:*)",
       "Bash(git restore:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(node --check:*)",
+      "Bash(timeout 5 node:*)"
     ]
   }
 }

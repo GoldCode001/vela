@@ -10,6 +10,7 @@
     "@1inch/fusion-sdk": "^2.4.3",
     "@aave/contract-helpers": "^1.36.2",
     "@aave/math-utils": "^1.36.2",
+    "@coinbase/coinbase-sdk": "^0.25.0",
     "@coinbase/onchainkit": "^1.1.2",
     "@moonpay/moonpay-react": "^1.10.6",
     "@polymarket/clob-client": "^4.22.8",
