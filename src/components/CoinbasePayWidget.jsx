@@ -23,7 +23,14 @@ export default function CoinbasePayWidget({ walletAddress, onClose, onSuccess, v
     const initCoinbasePay = async () => {
       try {
         // Dynamically import the SDK to avoid build issues
-        const { initOnRamp } = await import('@coinbase/cbpay-js');
+        const cbpay = await import('@coinbase/cbpay-js');
+        
+        // Check if initOnRamp exists, otherwise try default export
+        const initOnRamp = cbpay.initOnRamp || cbpay.default?.initOnRamp || cbpay.default;
+        
+        if (!initOnRamp || typeof initOnRamp !== 'function') {
+          throw new Error('initOnRamp function not found in @coinbase/cbpay-js. Please check the SDK version.');
+        }
         
         onramp = initOnRamp({
           appId: coinbaseAppId,
