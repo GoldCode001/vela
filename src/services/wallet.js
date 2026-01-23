@@ -16,13 +16,11 @@ const baseClient = createPublicClient({
   transport: http('https://mainnet.base.org'),
 });
 
-// Use backend proxy for Polygon RPC to avoid CORS issues
-// Browser can't directly call Polygon RPC due to CORS, so we proxy through backend
-import { API_URL } from '../config/api.js';
-
+// Use public Polygon RPC that allows CORS
+// Ankr public RPC works from browser without CORS issues
 const polygonClient = createPublicClient({
   chain: polygon,
-  transport: http(`${API_URL}/api/polygon-rpc/proxy`),
+  transport: http('https://polygon-rpc.com'),
 });
 
 // Get USDC balance from Base blockchain
