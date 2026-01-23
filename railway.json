@@ -7,5 +7,6 @@
     "startCommand": "npm run server",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 100
-  }
+  },
+  "comment": "This config is for BACKEND. For frontend, use railway-frontend.json or set startCommand to 'npx serve dist -s -l $PORT'"
 }
