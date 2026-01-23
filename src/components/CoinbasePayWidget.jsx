@@ -22,18 +22,11 @@ export default function CoinbasePayWidget({ walletAddress, onClose, onSuccess, v
     let onramp;
     const initCoinbasePay = async () => {
       try {
-        // Import the entire module
-        const cbpayModule = await import('@coinbase/cbpay-js');
+        // Import the SDK - initOnRamp uses callback pattern, not promises
+        const { initOnRamp } = await import('@coinbase/cbpay-js');
         
-        // The SDK exports initOnRamp as a named export
-        const initOnRamp = cbpayModule.initOnRamp;
-        
-        if (typeof initOnRamp !== 'function') {
-          console.error('Coinbase Pay SDK exports:', Object.keys(cbpayModule));
-          throw new Error(`initOnRamp is not a function. SDK version: ${cbpayModule.version || 'unknown'}`);
-        }
-        
-        onramp = initOnRamp({
+        // initOnRamp takes TWO parameters: options object and callback function
+        initOnRamp({
           appId: coinbaseAppId,
           widgetParameters: {
             destinationWallets: [
@@ -59,21 +52,37 @@ export default function CoinbasePayWidget({ walletAddress, onClose, onSuccess, v
           },
           onEvent: (event) => {
             console.log('Coinbase Pay event:', event);
-            if (event.eventName === 'onramp_success') {
+            if (event.eventName === 'success') {
               if (onSuccess) {
                 onSuccess();
               }
               onClose();
             }
           },
+          experienceLoggedIn: 'popup',
+          experienceLoggedOut: 'popup',
+          closeOnExit: true,
+          closeOnSuccess: true,
+        }, (error, instance) => {
+          // Callback function - initOnRamp uses callback pattern, not promises!
+          if (error) {
+            console.error('Error initializing Coinbase Pay:', error);
+            setError(`Failed to initialize Coinbase Pay: ${error.message}`);
+            setLoading(false);
+            return;
+          }
+          
+          onramp = instance;
+          setLoading(false);
+          
+          // Open immediately after initialization
+          if (instance) {
+            instance.open();
+          }
         });
-
-        // Open the Coinbase Pay widget
-        onramp.open();
-        setLoading(false);
       } catch (err) {
-        console.error('Error initializing Coinbase Pay:', err);
-        setError(`Failed to initialize Coinbase Pay: ${err.message || 'Please check your Coinbase App ID'}`);
+        console.error('Error importing Coinbase Pay SDK:', err);
+        setError(`Failed to load Coinbase Pay: ${err.message}`);
         setLoading(false);
       }
     };
