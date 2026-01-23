@@ -7,8 +7,7 @@ import aaveRouter from './routes/aave.js';
 import aiTutorRouter from './routes/aiTutor.js';
 import bridgeRouter from './routes/bridge.js';
 import polygonRpcRouter from './routes/polygon-rpc.js';
-import coinbaseRouter from './routes/coinbase.js';
-import coinbaseOnrampRouter from './routes/coinbase-onramp.js';
+import coinbaseRouter from './routes/coinbase-onramp.js';
 
 // Load environment variables
 dotenv.config();
@@ -18,14 +17,26 @@ const PORT = process.env.PORT || 3001;
 const HOST = '0.0.0.0';
 
 // CORS middleware - MUST be before routes
-// The cors package handles preflight OPTIONS requests automatically
+const allowedOrigins = [
+  'https://vela-app.up.railway.app',
+  'https://vela-goldman.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:3000',
+];
+
 app.use(cors({
-  origin: [
-    'https://vela-app.up.railway.app',
-    'https://vela-goldman.vercel.app',
-    'http://localhost:5173',
-    'http://localhost:3000',
-  ],
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      console.log(`✅ CORS: Allowing origin ${origin}`);
+      callback(null, true);
+    } else {
+      console.warn(`❌ CORS: Blocking origin ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -62,7 +73,6 @@ app.use('/api/ai-tutor', aiTutorRouter);
 app.use('/api/bridge', bridgeRouter);
 app.use('/api/polygon-rpc', polygonRpcRouter);
 app.use('/api/coinbase', coinbaseRouter);
-app.use('/api/coinbase', coinbaseOnrampRouter);
 
 // Error handling
 app.use((err, req, res, next) => {
