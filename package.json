@@ -2,6 +2,10 @@
   "type": "module",
   "name": "vela",
   "private": true,
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
   "dependencies": {
     "@1inch/fusion-sdk": "^2.4.3",
     "@aave/contract-helpers": "^1.36.2",
