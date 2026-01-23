@@ -17,15 +17,12 @@ const baseClient = createPublicClient({
 });
 
 // Use backend proxy for Polygon RPC to avoid CORS issues
-// The backend proxies requests to Polygon RPC
-const API_URL = import.meta.env.VITE_API_URL || 'https://vela-production-804d.up.railway.app';
-
-// Custom transport that uses backend proxy
-const polygonTransport = http(`${API_URL}/api/polygon-rpc/proxy`);
+// Browser can't directly call Polygon RPC due to CORS, so we proxy through backend
+import { API_URL } from '../config/api.js';
 
 const polygonClient = createPublicClient({
   chain: polygon,
-  transport: polygonTransport,
+  transport: http(`${API_URL}/api/polygon-rpc/proxy`),
 });
 
 // Get USDC balance from Base blockchain
