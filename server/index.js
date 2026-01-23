@@ -7,6 +7,7 @@ import aaveRouter from './routes/aave.js';
 import aiTutorRouter from './routes/aiTutor.js';
 import bridgeRouter from './routes/bridge.js';
 import polygonRpcRouter from './routes/polygon-rpc.js';
+import coinbaseRouter from './routes/coinbase.js';
 import coinbaseOnrampRouter from './routes/coinbase-onramp.js';
 
 // Load environment variables
@@ -49,7 +50,7 @@ app.get('/', (req, res) => {
   res.json({ 
     message: 'Vela API',
     version: '1.0.0',
-    endpoints: ['/health', '/api/markets', '/api/bets', '/api/aave', '/api/ai-tutor', '/api/bridge']
+    endpoints: ['/health', '/api/markets', '/api/bets', '/api/aave', '/api/ai-tutor', '/api/bridge', '/api/coinbase']
   });
 });
 
@@ -60,6 +61,7 @@ app.use('/api/aave', aaveRouter);
 app.use('/api/ai-tutor', aiTutorRouter);
 app.use('/api/bridge', bridgeRouter);
 app.use('/api/polygon-rpc', polygonRpcRouter);
+app.use('/api/coinbase', coinbaseRouter);
 app.use('/api/coinbase', coinbaseOnrampRouter);
 
 // Error handling
