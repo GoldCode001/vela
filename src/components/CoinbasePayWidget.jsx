@@ -1,47 +1,85 @@
 import { useEffect, useState } from 'react';
+import { initOnRamp } from '@coinbase/cbpay-js';
 
 export default function CoinbasePayWidget({ walletAddress, onClose, onSuccess, verifyOnly = false }) {
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
   const coinbaseAppId = import.meta.env.VITE_COINBASE_APP_ID;
 
   useEffect(() => {
     if (!coinbaseAppId) {
       setError('Coinbase App ID not configured. Please set VITE_COINBASE_APP_ID in Railway environment variables.');
+      setLoading(false);
       return;
     }
 
     if (!walletAddress) {
       setError('Wallet address not found');
+      setLoading(false);
       return;
     }
-  }, [coinbaseAppId, walletAddress]);
 
-  // Coinbase Pay uses a different URL format
-  // Try using the Coinbase Pay SDK URL or the correct embed format
-  const buildCoinbasePayUrl = () => {
-    if (!coinbaseAppId || !walletAddress) return null;
+    // Initialize Coinbase Pay SDK
+    let onramp;
+    try {
+      onramp = initOnRamp({
+        appId: coinbaseAppId,
+        widgetParameters: {
+          destinationWallets: [
+            {
+              address: walletAddress,
+              blockchains: ['base'],
+              assets: ['USDC'],
+            },
+          ],
+          presetAmount: verifyOnly ? '10' : undefined,
+          presetCurrency: 'USD',
+        },
+        onSuccess: () => {
+          console.log('Coinbase Pay: Payment successful');
+          if (onSuccess) {
+            onSuccess();
+          }
+          onClose();
+        },
+        onExit: () => {
+          console.log('Coinbase Pay: User exited');
+          onClose();
+        },
+        onEvent: (event) => {
+          console.log('Coinbase Pay event:', event);
+          if (event.eventName === 'onramp_success') {
+            if (onSuccess) {
+              onSuccess();
+            }
+            onClose();
+          }
+        },
+      });
 
-    // Format destination wallets as JSON string
-    const destinationWallets = JSON.stringify([{
-      address: walletAddress,
-      blockchains: ['base'],
-      assets: ['USDC']
-    }]);
+      // Open the Coinbase Pay widget
+      onramp.open();
+      setLoading(false);
+    } catch (err) {
+      console.error('Error initializing Coinbase Pay:', err);
+      setError(`Failed to initialize Coinbase Pay: ${err.message}`);
+      setLoading(false);
+    }
 
-    // Build URL with proper encoding
-    const params = new URLSearchParams({
-      appId: coinbaseAppId,
-      destinationWallets: destinationWallets,
-      presetAmount: verifyOnly ? '10' : '100',
-      presetCurrency: 'USD'
-    });
+    // Cleanup on unmount
+    return () => {
+      if (onramp) {
+        try {
+          onramp.destroy();
+        } catch (err) {
+          console.error('Error destroying Coinbase Pay:', err);
+        }
+      }
+    };
+  }, [coinbaseAppId, walletAddress, verifyOnly, onSuccess, onClose]);
 
-    return `https://pay.coinbase.com/buy/select-asset?${params.toString()}`;
-  };
-
-  const coinbasePayUrl = buildCoinbasePayUrl();
-
-  if (!coinbaseAppId) {
+  // Error state UI
+  if (error || !coinbaseAppId) {
     return (
       <div 
         className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
@@ -58,9 +96,11 @@ export default function CoinbasePayWidget({ walletAddress, onClose, onSuccess, v
             <span className="text-white text-2xl font-bold">×</span>
           </button>
           <div className="text-center">
-            <p className="text-red-500 text-lg font-semibold mb-4">Configuration Error</p>
+            <p className="text-red-500 text-lg font-semibold mb-4">
+              {!coinbaseAppId ? 'Configuration Error' : 'Error'}
+            </p>
             <p className="text-gray-700 mb-4">
-              Coinbase App ID is missing. Please add <code className="bg-gray-100 px-2 py-1 rounded">VITE_COINBASE_APP_ID</code> to your Railway environment variables.
+              {error || 'Coinbase App ID is missing. Please add VITE_COINBASE_APP_ID to your Railway environment variables.'}
             </p>
             <button onClick={onClose} className="btn-primary">
               Close
@@ -71,87 +111,39 @@ export default function CoinbasePayWidget({ walletAddress, onClose, onSuccess, v
     );
   }
 
-  if (!coinbasePayUrl) {
-    return (
-      <div 
-        className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
-        onClick={onClose}
-      >
-        <div 
-          className="relative w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl p-8" 
-          onClick={(e) => e.stopPropagation()}
-        >
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 z-10 w-10 h-10 bg-black/20 hover:bg-black/40 rounded-full flex items-center justify-center transition"
-          >
-            <span className="text-white text-2xl font-bold">×</span>
-          </button>
-          <div className="text-center">
-            <p className="text-red-500 text-lg font-semibold mb-4">Error</p>
-            <p className="text-gray-700 mb-4">Unable to build Coinbase Pay URL. Please check your configuration.</p>
-            <button onClick={onClose} className="btn-primary">
-              Close
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
+  // Loading state - Coinbase Pay SDK opens a popup/modal, so we just show a loading message
   return (
     <div 
       className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div 
-        className="relative w-full max-w-lg bg-white rounded-3xl overflow-hidden shadow-2xl" 
-        style={{ height: '90vh', maxHeight: '700px' }}
+        className="relative w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl p-8" 
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close Button */}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 z-10 w-10 h-10 bg-black/20 hover:bg-black/40 rounded-full flex items-center justify-center transition"
         >
           <span className="text-white text-2xl font-bold">×</span>
         </button>
-
-        {error && (
-          <div className="p-4 bg-red-50 border-b border-red-200">
-            <p className="text-red-600 text-sm">{error}</p>
-          </div>
-        )}
-
-        {/* Coinbase Pay Iframe */}
-        <iframe
-          src={coinbasePayUrl}
-          title="Add Funds"
-          style={{ 
-            width: '100%', 
-            height: '100%',
-            border: 'none',
-          }}
-          allow="payment; camera; microphone"
-          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
-          onError={() => {
-            setError('Failed to load Coinbase Pay. Please check your Coinbase App ID and try again.');
-          }}
-          onLoad={() => {
-            // Handle successful payment
-            const handleMessage = (event) => {
-              // Coinbase Pay sends messages when payment is complete
-              if (event.origin === 'https://pay.coinbase.com' && event.data?.type === 'coinbase-pay-success') {
-                if (onSuccess) {
-                  onSuccess();
-                }
-                onClose();
-              }
-            };
-            window.addEventListener('message', handleMessage);
-            return () => window.removeEventListener('message', handleMessage);
-          }}
-        />
+        <div className="text-center">
+          {loading ? (
+            <>
+              <div className="animate-spin h-12 w-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+              <p className="text-gray-700 mb-2">Opening Coinbase Pay...</p>
+              <p className="text-gray-500 text-sm">A popup window should open shortly</p>
+            </>
+          ) : (
+            <>
+              <p className="text-gray-700 mb-4">Coinbase Pay window opened</p>
+              <p className="text-gray-500 text-sm mb-4">Complete your purchase in the popup window</p>
+              <button onClick={onClose} className="btn-secondary">
+                Close
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
