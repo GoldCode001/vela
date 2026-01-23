@@ -16,6 +16,7 @@ const PORT = process.env.PORT || 3001;
 const HOST = '0.0.0.0';
 
 // CORS middleware - MUST be before routes
+// The cors package handles preflight OPTIONS requests automatically
 app.use(cors({
   origin: [
     'https://vela-app.up.railway.app',
@@ -26,16 +27,9 @@ app.use(cors({
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
 }));
-
-// Explicitly handle OPTIONS preflight for all routes
-app.options('*', (req, res) => {
-  res.header('Access-Control-Allow-Origin', req.headers.origin);
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.sendStatus(204);
-});
 
 app.use(express.json());
 
