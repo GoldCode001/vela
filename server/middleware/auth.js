@@ -1,13 +1,28 @@
-import { PrivyClient } from '@privy-io/node';
-
-// Initialize Privy client
-const privyAppId = process.env.VITE_PRIVY_APP_ID;
-const privyAppSecret = process.env.PRIVY_APP_SECRET;
-
+// Privy client for JWT verification (lazy loaded)
+let PrivyClient = null;
 let privyClient = null;
+let privyLoadAttempted = false;
 
-function getPrivyClient() {
-  if (!privyClient && privyAppId && privyAppSecret) {
+async function loadPrivyClient() {
+  if (privyLoadAttempted) return;
+  privyLoadAttempted = true;
+
+  try {
+    const module = await import('@privy-io/node');
+    PrivyClient = module.PrivyClient;
+    console.log('Privy client loaded successfully');
+  } catch (error) {
+    console.warn('Failed to load @privy-io/node:', error.message);
+  }
+}
+
+async function getPrivyClient() {
+  await loadPrivyClient();
+
+  const privyAppId = process.env.VITE_PRIVY_APP_ID;
+  const privyAppSecret = process.env.PRIVY_APP_SECRET;
+
+  if (!privyClient && PrivyClient && privyAppId && privyAppSecret) {
     privyClient = new PrivyClient(privyAppId, privyAppSecret);
   }
   return privyClient;
@@ -24,7 +39,7 @@ export async function verifyPrivyToken(req, res, next) {
   const token = authHeader.split(' ')[1];
 
   try {
-    const client = getPrivyClient();
+    const client = await getPrivyClient();
 
     if (!client) {
       console.warn('Privy client not configured - skipping auth verification');
