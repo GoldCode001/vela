@@ -19,7 +19,11 @@ createRoot(document.getElementById('root')).render(
           createOnLogin: 'users-without-wallets',
           requireUserPasswordOnCreate: false,
         },
-        // Don't include externalWallets.solana at all - Privy will disable it automatically
+        externalWallets: {
+          solana: {
+            connectors: [], // Explicitly disable Solana
+          },
+        },
       }}
     >
       <BrowserRouter>
