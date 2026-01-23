@@ -1,5 +1,6 @@
 import { usePrivy } from '@privy-io/react-auth';
 import { useState } from 'react';
+import { API_URL } from '../config/api';
 
 export function useTrade() {
   const { user, exportWallet } = usePrivy();
@@ -23,7 +24,7 @@ export function useTrade() {
       }
 
       // Send trade request to backend with private key
-      const response = await fetch('http://localhost:3001/api/bets/place', {
+      const response = await fetch(`${API_URL}/api/bets/place`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -1,6 +1,7 @@
 import express from 'express';
 import { supabase } from '../config/supabase.js';
 import { createClobClient, placeBuyOrder } from '../services/polymarket-trading.js';
+import { getPolygonPrivateKey } from '../services/wallet-manager.js';
 
 const router = express.Router();
 
@@ -34,10 +35,25 @@ router.post('/place', async (req, res) => {
     let entryPrice = 0.50;
     let shares = betAmount / entryPrice;
 
+    // Get Polygon wallet private key for this user
+    // Note: In production, the frontend should use the Polygon wallet's private key
+    // For now, we'll get it from the wallet manager
+    let polygonPrivateKey = privateKey; // Fallback to provided key
+    
+    try {
+      const storedPolygonKey = await getPolygonPrivateKey(walletAddress);
+      if (storedPolygonKey) {
+        polygonPrivateKey = storedPolygonKey;
+        console.log('✅ Using Polygon wallet for trade');
+      }
+    } catch (err) {
+      console.log('⚠️ Could not get Polygon wallet, using provided key');
+    }
+
     // Execute REAL trade if private key and tokens provided
-    if (privateKey && tokenIds && tokenIds.length > 0) {
+    if (polygonPrivateKey && tokenIds && tokenIds.length > 0) {
       try {
-        console.log('🚀 Executing REAL Polymarket trade...');
+        console.log('🚀 Executing REAL Polymarket trade on Polygon...');
         
         const tokenId = tokenIds[outcome];
         
@@ -45,8 +61,8 @@ router.post('/place', async (req, res) => {
           throw new Error('Token ID not found for selected outcome');
         }
         
-        // Initialize CLOB client
-        const clobClient = createClobClient(privateKey);
+        // Initialize CLOB client with Polygon private key
+        const clobClient = createClobClient(polygonPrivateKey);
         
         // Place buy order
         tradeResult = await placeBuyOrder(clobClient, tokenId, betAmount);

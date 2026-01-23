@@ -105,7 +105,7 @@ export default function Education() {
     {
       term: 'Gas Fees',
       definition: 'transaction costs paid to blockchain validators',
-      example: 'on polygon, gas fees are usually under $0.01'
+      example: 'on base, gas fees are usually under $0.01'
     },
     {
       term: 'Wallet',

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState, useMemo } from 'react';
 import Navbar from '../components/Navbar.jsx';
 import AnimatedBackground from '../components/AnimatedBackground.jsx';
-import MercuryoWidget from '../components/MercuryoWidget.jsx';
+import CoinbasePayWidget from '../components/CoinbasePayWidget.jsx';
 import AaveModal from '../components/AaveModal.jsx';
 import { useBalance } from '../hooks/useBalance';
 import { supabase } from '../lib/supabase';
@@ -12,8 +12,8 @@ import AITutorChat from '../components/AITutorChat.jsx';
 export default function Dashboard() {
   const { ready, authenticated, user } = usePrivy();
   const navigate = useNavigate();
-  const { balance, maticBalance, loading, refresh } = useBalance();
-  const [showMercuryo, setShowMercuryo] = useState(false);
+  const { balance, availableBalance, ethBalance, loading, refresh, minReservedBalance } = useBalance();
+  const [showCoinbasePay, setShowCoinbasePay] = useState(false);
   const [showAave, setShowAave] = useState(false);
   const [verifyMode, setVerifyMode] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
@@ -104,12 +104,12 @@ export default function Dashboard() {
 
   const handleVerify = () => {
     setVerifyMode(true);
-    setShowMercuryo(true);
+    setShowCoinbasePay(true);
   };
 
   const handleAddFunds = () => {
     setVerifyMode(false);
-    setShowMercuryo(true);
+    setShowCoinbasePay(true);
   };
 
   if (!ready || !authenticated || loading) {
@@ -237,14 +237,12 @@ export default function Dashboard() {
               </button>
             </div>
             <p className="text-white text-3xl sm:text-4xl font-bold mb-1">
-              ${balance.toFixed(2)}
+              ${availableBalance.toFixed(2)}
             </p>
-            <p className="text-gray-500 text-xs">Universal wallet balance</p>
-            {maticBalance < 0.01 && (
-              <p className="text-xs text-yellow-400 mt-2">
-                ⚠️ Low gas - transactions may fail
-              </p>
-            )}
+            <p className="text-gray-500 text-xs mb-1">Available to spend</p>
+            <p className="text-gray-600 text-xs">
+              Total: ${balance.toFixed(2)} • ${minReservedBalance} reserved for fees
+            </p>
           </div>
 
           <div className="glass-card">
@@ -353,12 +351,12 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Mercuryo Widget */}
-      {showMercuryo && wallet?.address && (
-        <MercuryoWidget
+      {/* Coinbase Pay Widget */}
+      {showCoinbasePay && wallet?.address && (
+        <CoinbasePayWidget
           walletAddress={wallet.address}
           verifyOnly={verifyMode}
-          onClose={() => setShowMercuryo(false)}
+          onClose={() => setShowCoinbasePay(false)}
           onSuccess={() => {
             if (verifyMode) {
               markAsVerified();
@@ -372,7 +370,7 @@ export default function Dashboard() {
       {showAave && (
         <AaveModal
           onClose={() => setShowAave(false)}
-          currentBalance={balance}
+          currentBalance={availableBalance}
           onSuccess={() => {
             refresh();
             setShowAave(false);

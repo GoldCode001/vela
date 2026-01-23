@@ -5,6 +5,7 @@ import Navbar from '../components/Navbar.jsx';
 import AnimatedBackground from '../components/AnimatedBackground.jsx';
 import BettingModal from '../components/BettingModal.jsx';
 import MarketCarousel from '../components/MarketCarousel.jsx';
+import FundPredictionWallet from '../components/FundPredictionWallet.jsx';
 import { useBalance } from '../hooks/useBalance';
 import { API_URL } from '../config/api';
 
@@ -21,7 +22,8 @@ export default function Markets() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('volume'); // 'volume', 'newest', 'probability'
   
-  const { balance, refresh: refreshBalance } = useBalance();
+  const { balance, availableBalance, polygonBalance, availablePolygonBalance, refresh: refreshBalance, refreshPolygonBalance } = useBalance();
+  const [showFundWallet, setShowFundWallet] = useState(false);
 
   useEffect(() => {
     if (ready && !authenticated) {
@@ -31,7 +33,19 @@ export default function Markets() {
 
   useEffect(() => {
     fetchMarkets();
-  }, []);
+    // Check if user needs to fund prediction wallet
+    if (availablePolygonBalance < 10) {
+      // Show prompt after a short delay
+      const timer = setTimeout(() => {
+        // Only show if user hasn't dismissed it
+        const dismissed = localStorage.getItem('fundWalletPromptDismissed');
+        if (!dismissed) {
+          // Will show banner below
+        }
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [availablePolygonBalance]);
 
   useEffect(() => {
     applyFilters();
@@ -199,6 +213,36 @@ export default function Markets() {
             </div>
           </div>
 
+          {/* Fund Prediction Wallet Banner */}
+          {availablePolygonBalance < 10 && (
+            <div className="glass-card mb-8 p-4 sm:p-6 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/30">
+              <div className="flex items-start gap-4">
+                <div className="text-3xl">💡</div>
+                <div className="flex-1">
+                  <h3 className="text-white font-bold text-lg mb-2">Ready to bet? Fund your prediction wallet first</h3>
+                  <p className="text-gray-300 text-sm mb-4">
+                    Your prediction wallet has ${availablePolygonBalance.toFixed(2)} available. 
+                    Fund it from your main wallet to start placing bets instantly.
+                  </p>
+                  <button
+                    onClick={() => setShowFundWallet(true)}
+                    className="glass-btn text-sm font-semibold"
+                  >
+                    Fund Prediction Wallet
+                  </button>
+                </div>
+                <button
+                  onClick={() => {
+                    localStorage.setItem('fundWalletPromptDismissed', 'true');
+                  }}
+                  className="text-gray-500 hover:text-white transition text-xl"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Markets Display */}
           {loading ? (
             <div className="flex items-center justify-center py-20">
@@ -247,8 +291,24 @@ export default function Markets() {
         <BettingModal 
           market={selectedMarket} 
           onClose={() => setSelectedMarket(null)}
-          userBalance={balance}
-          onBalanceUpdate={refreshBalance}
+          userBalance={availablePolygonBalance}
+          onBalanceUpdate={() => {
+            refreshBalance();
+            refreshPolygonBalance();
+          }}
+        />
+      )}
+
+      {showFundWallet && (
+        <FundPredictionWallet
+          onClose={() => setShowFundWallet(false)}
+          onSuccess={() => {
+            refreshBalance();
+            refreshPolygonBalance();
+            setShowFundWallet(false);
+          }}
+          baseBalance={balance}
+          availableBalance={availableBalance}
         />
       )}
     </>

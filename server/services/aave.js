@@ -1,12 +1,13 @@
 import { ethers } from 'ethers';
 
-// Aave V3 on Polygon
-const AAVE_POOL_ADDRESS = '0x794a61358D6845594F94dc1DB02A252b5b4814aD';
-const USDC_ADDRESS = '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359';
-const aUSDC_ADDRESS = '0x625E7708f30cA75bfd92586e17077590C60eb4cD'; // Aave interest-bearing USDC
-const POLYGON_RPC = 'https://polygon-rpc.com';
+// Aave V3 on Base
+const AAVE_POOL_ADDRESS = '0xA238Dd80C259a72e81d7e4664a9801593F98d1c5';
+const USDC_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'; // Base USDC
+const aUSDC_ADDRESS = '0x4e65fE4DbA92790696d040AC24Aa414708F5c0AB'; // Aave interest-bearing USDC on Base
+const BASE_RPC = process.env.BASE_RPC_URL || 'https://mainnet.base.org';
+const MIN_RESERVED_BALANCE = 1.0; // $1 minimum balance for fees
 
-const provider = new ethers.providers.JsonRpcProvider(POLYGON_RPC);
+const provider = new ethers.providers.JsonRpcProvider(BASE_RPC);
 
 // Pool ABI (simplified - only functions we need)
 const POOL_ABI = [
@@ -20,10 +21,12 @@ const ERC20_ABI = [
   'function allowance(address owner, address spender) view returns (uint256)',
 ];
 
-// Get current USDC APY from Aave
+// Get current USDC APY from Aave on Base
 export async function getAaveAPY() {
   try {
-    const response = await fetch('https://aave-api-v2.aave.com/data/rates-history?reserveId=0x3c499c542cef5e3811e1192ce70d8cc03d5c3359137');
+    // Aave API for Base (chain ID 8453)
+    // Using Base USDC reserve ID format
+    const response = await fetch('https://aave-api-v2.aave.com/data/rates-history?reserveId=0x833589fcd6edb6e08f4c7c32d4f71b54bda029138453');
     const data = await response.json();
     
     // Get latest supply APY
@@ -40,20 +43,31 @@ export async function getAaveAPY() {
   }
 }
 
-// Deposit USDC into Aave
+// Deposit USDC into Aave (ensures minimum balance is maintained)
 export async function depositToAave(privateKey, amount) {
   try {
     const wallet = new ethers.Wallet(privateKey, provider);
+    
+    // Check current balance to ensure minimum reserve
+    const usdcContract = new ethers.Contract(USDC_ADDRESS, ERC20_ABI, provider);
+    const currentBalance = await usdcContract.balanceOf(wallet.address);
+    const currentBalanceFormatted = parseFloat(ethers.utils.formatUnits(currentBalance, 6));
+    
+    // Ensure user maintains minimum balance after deposit
+    if (currentBalanceFormatted - amount < MIN_RESERVED_BALANCE) {
+      throw new Error(`Insufficient balance. You need at least $${MIN_RESERVED_BALANCE} reserved for transaction fees.`);
+    }
+    
     const amountWei = ethers.utils.parseUnits(amount.toString(), 6); // USDC = 6 decimals
     
     // 1. Approve Aave Pool to spend USDC
-    const usdcContract = new ethers.Contract(USDC_ADDRESS, ERC20_ABI, wallet);
+    const usdcContractWithSigner = new ethers.Contract(USDC_ADDRESS, ERC20_ABI, wallet);
     
-    const currentAllowance = await usdcContract.allowance(wallet.address, AAVE_POOL_ADDRESS);
+    const currentAllowance = await usdcContractWithSigner.allowance(wallet.address, AAVE_POOL_ADDRESS);
     
     if (currentAllowance.lt(amountWei)) {
       console.log('Approving USDC...');
-      const approveTx = await usdcContract.approve(AAVE_POOL_ADDRESS, amountWei);
+      const approveTx = await usdcContractWithSigner.approve(AAVE_POOL_ADDRESS, amountWei);
       await approveTx.wait();
       console.log('Approved!');
     }

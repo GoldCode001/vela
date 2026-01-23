@@ -5,6 +5,7 @@ import marketsRouter from './routes/markets.js';
 import betsRouter from './routes/bets.js';
 import aaveRouter from './routes/aave.js';
 import aiTutorRouter from './routes/aiTutor.js';
+import bridgeRouter from './routes/bridge.js';
 
 // Load environment variables
 dotenv.config();
@@ -15,7 +16,12 @@ const HOST = '0.0.0.0';
 
 // Middleware
 app.use(cors({
-  origin: '*',
+  origin: [
+    'https://vela-goldman.vercel.app',
+    'http://localhost:5173',
+    'http://localhost:3000',
+    '*'
+  ],
   credentials: true
 }));
 app.use(express.json());
@@ -35,7 +41,7 @@ app.get('/', (req, res) => {
   res.json({ 
     message: 'Vela API',
     version: '1.0.0',
-    endpoints: ['/health', '/api/markets', '/api/bets']
+    endpoints: ['/health', '/api/markets', '/api/bets', '/api/aave', '/api/ai-tutor', '/api/bridge']
   });
 });
 
@@ -44,6 +50,7 @@ app.use('/api/markets', marketsRouter);
 app.use('/api/bets', betsRouter);
 app.use('/api/aave', aaveRouter); 
 app.use('/api/ai-tutor', aiTutorRouter);
+app.use('/api/bridge', bridgeRouter);
 
 // Error handling
 app.use((err, req, res, next) => {

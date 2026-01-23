@@ -20,9 +20,17 @@ export default function BettingModal({ market, onClose, userBalance, onBalanceUp
     }
 
     const betAmount = parseFloat(amount);
+    const MIN_RESERVED = 1.0;
+    const availableBalance = userBalance; // userBalance is already the available balance from Markets page
 
-    if (betAmount > userBalance) {
+    // Check if bet would leave less than $1 in wallet
+    if (betAmount > availableBalance) {
       setShowFunding(true);
+      return;
+    }
+
+    if (availableBalance - betAmount < MIN_RESERVED) {
+      alert(`Insufficient balance. You need at least $${MIN_RESERVED} reserved for transaction fees.\n\nAvailable: $${availableBalance.toFixed(2)}\nBet amount: $${betAmount.toFixed(2)}`);
       return;
     }
 
@@ -87,7 +95,7 @@ export default function BettingModal({ market, onClose, userBalance, onBalanceUp
           </p>
 
           <p className="text-white text-sm mb-4">
-            Go to Dashboard to add funds with your credit card via Ramp Network.
+            Add funds to your prediction wallet to place this bet.
           </p>
           
           <button 
@@ -114,7 +122,9 @@ export default function BettingModal({ market, onClose, userBalance, onBalanceUp
         <div className="flex items-start justify-between mb-4 sm:mb-6">
           <div>
             <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">Place Bet</h3>
-            <p className="text-gray-500 text-xs sm:text-sm">Balance: ${userBalance.toFixed(2)}</p>
+            <p className="text-gray-500 text-xs sm:text-sm">
+              Available: ${userBalance.toFixed(2)} • $1 reserved for fees
+            </p>
           </div>
           <button onClick={onClose} className="text-gray-500 hover:text-white transition text-xl sm:text-2xl">
             ✕

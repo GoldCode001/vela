@@ -53,8 +53,16 @@ export default function AaveModal({ onClose, currentBalance, onSuccess }) {
 
     const amountNum = parseFloat(amount);
 
+    const MIN_RESERVED = 1.0;
+    
     if (mode === 'deposit' && amountNum > currentBalance) {
       alert('Insufficient balance');
+      return;
+    }
+
+    // Ensure minimum balance is maintained after deposit
+    if (mode === 'deposit' && currentBalance - amountNum < MIN_RESERVED) {
+      alert(`You need to keep at least $${MIN_RESERVED} reserved for transaction fees.`);
       return;
     }
 
@@ -156,10 +164,19 @@ export default function AaveModal({ onClose, currentBalance, onSuccess }) {
             step="0.01"
           />
           <button
-            onClick={() => setAmount(mode === 'deposit' ? currentBalance.toString() : aaveBalance.toString())}
+            onClick={() => {
+              const MIN_RESERVED = 1.0;
+              if (mode === 'deposit') {
+                // Max is available balance minus reserved amount
+                const maxAmount = Math.max(0, currentBalance - MIN_RESERVED);
+                setAmount(maxAmount > 0 ? maxAmount.toString() : '0');
+              } else {
+                setAmount(aaveBalance.toString());
+              }
+            }}
             className="text-xs text-gray-500 hover:text-white mt-2"
           >
-            Max: ${(mode === 'deposit' ? currentBalance : aaveBalance).toFixed(2)}
+            Max: ${(mode === 'deposit' ? Math.max(0, currentBalance - 1.0) : aaveBalance).toFixed(2)}
           </button>
         </div>
 
