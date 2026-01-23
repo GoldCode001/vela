@@ -16,10 +16,10 @@ const baseClient = createPublicClient({
   transport: http('https://mainnet.base.org'),
 });
 
-// Use a reliable Polygon RPC endpoint
+// Use a reliable Polygon RPC endpoint (Alchemy public endpoint)
 const polygonClient = createPublicClient({
   chain: polygon,
-  transport: http('https://polygon.llamarpc.com'), // Reliable public RPC
+  transport: http('https://polygon-rpc.publicnode.com'), // Reliable public RPC
 });
 
 // Get USDC balance from Base blockchain

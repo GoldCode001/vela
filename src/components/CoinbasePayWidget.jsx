@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { initOnRamp } from '@coinbase/cbpay-js';
 
 export default function CoinbasePayWidget({ walletAddress, onClose, onSuccess, verifyOnly = false }) {
   const [error, setError] = useState('');
@@ -19,56 +18,63 @@ export default function CoinbasePayWidget({ walletAddress, onClose, onSuccess, v
       return;
     }
 
-    // Initialize Coinbase Pay SDK
+    // Initialize Coinbase Pay SDK dynamically
     let onramp;
-    try {
-      onramp = initOnRamp({
-        appId: coinbaseAppId,
-        widgetParameters: {
-          destinationWallets: [
-            {
-              address: walletAddress,
-              blockchains: ['base'],
-              assets: ['USDC'],
-            },
-          ],
-          presetAmount: verifyOnly ? '10' : undefined,
-          presetCurrency: 'USD',
-        },
-        onSuccess: () => {
-          console.log('Coinbase Pay: Payment successful');
-          if (onSuccess) {
-            onSuccess();
-          }
-          onClose();
-        },
-        onExit: () => {
-          console.log('Coinbase Pay: User exited');
-          onClose();
-        },
-        onEvent: (event) => {
-          console.log('Coinbase Pay event:', event);
-          if (event.eventName === 'onramp_success') {
+    const initCoinbasePay = async () => {
+      try {
+        // Dynamically import the SDK to avoid build issues
+        const { initOnRamp } = await import('@coinbase/cbpay-js');
+        
+        onramp = initOnRamp({
+          appId: coinbaseAppId,
+          widgetParameters: {
+            destinationWallets: [
+              {
+                address: walletAddress,
+                blockchains: ['base'],
+                assets: ['USDC'],
+              },
+            ],
+            presetAmount: verifyOnly ? '10' : undefined,
+            presetCurrency: 'USD',
+          },
+          onSuccess: () => {
+            console.log('Coinbase Pay: Payment successful');
             if (onSuccess) {
               onSuccess();
             }
             onClose();
-          }
-        },
-      });
+          },
+          onExit: () => {
+            console.log('Coinbase Pay: User exited');
+            onClose();
+          },
+          onEvent: (event) => {
+            console.log('Coinbase Pay event:', event);
+            if (event.eventName === 'onramp_success') {
+              if (onSuccess) {
+                onSuccess();
+              }
+              onClose();
+            }
+          },
+        });
 
-      // Open the Coinbase Pay widget
-      onramp.open();
-      setLoading(false);
-    } catch (err) {
-      console.error('Error initializing Coinbase Pay:', err);
-      setError(`Failed to initialize Coinbase Pay: ${err.message}`);
-      setLoading(false);
-    }
+        // Open the Coinbase Pay widget
+        onramp.open();
+        setLoading(false);
+      } catch (err) {
+        console.error('Error initializing Coinbase Pay:', err);
+        setError(`Failed to initialize Coinbase Pay: ${err.message || 'Please check your Coinbase App ID'}`);
+        setLoading(false);
+      }
+    };
+
+    initCoinbasePay();
 
     // Cleanup on unmount
     return () => {
-      if (onramp) {
+      if (onramp && typeof onramp.destroy === 'function') {
         try {
           onramp.destroy();
         } catch (err) {

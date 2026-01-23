@@ -6,7 +6,7 @@ const SOCKET_API_URL = 'https://api.socket.tech/v2';
 
 // Base and Polygon RPCs
 const BASE_RPC = process.env.BASE_RPC_URL || 'https://mainnet.base.org';
-const POLYGON_RPC = process.env.POLYGON_RPC || 'https://polygon.llamarpc.com';
+const POLYGON_RPC = process.env.POLYGON_RPC || 'https://polygon-rpc.publicnode.com';
 
 // Contract addresses
 const BASE_USDC = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
