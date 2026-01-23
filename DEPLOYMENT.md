@@ -2,7 +2,7 @@
 
 ## Current Setup
 - **Backend**: Railway (https://vela-production-804d.up.railway.app/)
-- **Frontend**: Vercel (https://vela-goldman.vercel.app/)
+- **Frontend**: Railway (separate service)
 
 ## Deploying Frontend to Railway
 
@@ -73,18 +73,18 @@ vercel --prod
 
 ## Environment Variables Checklist
 
-### Frontend (Vercel)
-- [ ] VITE_API_URL
-- [ ] VITE_PRIVY_APP_ID
-- [ ] VITE_SUPABASE_URL
-- [ ] VITE_SUPABASE_ANON_KEY
-- [ ] VITE_COINBASE_APP_ID
+### Frontend (Railway - Separate Service)
+- [ ] VITE_API_URL=https://vela-production-804d.up.railway.app
+- [ ] VITE_PRIVY_APP_ID=your_privy_app_id
+- [ ] VITE_SUPABASE_URL=your_supabase_url
+- [ ] VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+- [ ] VITE_COINBASE_APP_ID=your_coinbase_app_id
 
-### Backend (Railway)
-- [ ] PORT
-- [ ] BASE_RPC_URL
-- [ ] POLYGON_RPC
-- [ ] SOCKET_API_KEY
-- [ ] SUPABASE_URL
-- [ ] SUPABASE_SERVICE_ROLE_KEY
-- [ ] OPENROUTER_API_KEY
+### Backend (Railway - Separate Service)
+- [ ] PORT=3001
+- [ ] BASE_RPC_URL=https://mainnet.base.org
+- [ ] POLYGON_RPC=https://polygon-rpc.com
+- [ ] SOCKET_API_KEY=your_socket_api_key
+- [ ] SUPABASE_URL=your_supabase_url
+- [ ] SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+- [ ] OPENROUTER_API_KEY=your_openrouter_api_key

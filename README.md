@@ -51,7 +51,7 @@ A seamless Web3 platform that makes crypto accessible to everyone. Built on Base
 
 ### Environment Variables
 
-#### Frontend (Vercel)
+#### Frontend (Railway)
 ```env
 VITE_API_URL=https://vela-production-804d.up.railway.app
 VITE_PRIVY_APP_ID=your_privy_app_id
