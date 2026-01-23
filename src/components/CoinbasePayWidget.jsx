@@ -1,7 +1,9 @@
 import { useCallback, useState } from 'react';
+import { usePrivy } from '@privy-io/react-auth';
 import { API_URL } from '../config/api.js';
 
 export default function CoinbasePayWidget({ walletAddress, onClose, onSuccess, verifyOnly = false }) {
+  const { getAccessToken } = usePrivy();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -12,10 +14,16 @@ export default function CoinbasePayWidget({ walletAddress, onClose, onSuccess, v
     setError('');
 
     try {
+      // Get Privy access token for authentication
+      const accessToken = await getAccessToken();
+
       // Get onramp URL from backend (includes session token)
       const response = await fetch(`${API_URL}/api/coinbase/session-token`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
         body: JSON.stringify({
           walletAddress,
           network: 'base',
@@ -41,7 +49,7 @@ export default function CoinbasePayWidget({ walletAddress, onClose, onSuccess, v
     } finally {
       setLoading(false);
     }
-  }, [walletAddress, onSuccess]);
+  }, [walletAddress, onSuccess, getAccessToken]);
 
   if (!walletAddress) {
     return (

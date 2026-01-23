@@ -1,5 +1,6 @@
 import express from 'express';
 import { Coinbase } from '@coinbase/coinbase-sdk';
+import { verifyPrivyToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -23,8 +24,8 @@ function initCoinbase() {
   return coinbase;
 }
 
-// Generate session token for Coinbase Onramp
-router.post('/session-token', async (req, res) => {
+// Generate session token for Coinbase Onramp (requires authentication)
+router.post('/session-token', verifyPrivyToken, async (req, res) => {
   try {
     const { walletAddress, network = 'base', asset = 'USDC' } = req.body;
 
