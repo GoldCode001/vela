@@ -16,11 +16,16 @@ const baseClient = createPublicClient({
   transport: http('https://mainnet.base.org'),
 });
 
-// Use viem's default Polygon RPC (handles CORS properly)
-// For browser requests, viem uses the chain's default RPC which supports CORS
+// Use backend proxy for Polygon RPC to avoid CORS issues
+// The backend proxies requests to Polygon RPC
+const API_URL = import.meta.env.VITE_API_URL || 'https://vela-production-804d.up.railway.app';
+
+// Custom transport that uses backend proxy
+const polygonTransport = http(`${API_URL}/api/polygon-rpc/proxy`);
+
 const polygonClient = createPublicClient({
-  chain: polygon, // Uses polygon's default RPC from viem/chains
-  transport: http(), // No URL = uses chain's default RPC
+  chain: polygon,
+  transport: polygonTransport,
 });
 
 // Get USDC balance from Base blockchain

@@ -6,6 +6,7 @@ import betsRouter from './routes/bets.js';
 import aaveRouter from './routes/aave.js';
 import aiTutorRouter from './routes/aiTutor.js';
 import bridgeRouter from './routes/bridge.js';
+import polygonRpcRouter from './routes/polygon-rpc.js';
 
 // Load environment variables
 dotenv.config();
@@ -51,6 +52,7 @@ app.use('/api/bets', betsRouter);
 app.use('/api/aave', aaveRouter); 
 app.use('/api/ai-tutor', aiTutorRouter);
 app.use('/api/bridge', bridgeRouter);
+app.use('/api/polygon-rpc', polygonRpcRouter);
 
 // Error handling
 app.use((err, req, res, next) => {
