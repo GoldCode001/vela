@@ -10,7 +10,9 @@
       "Bash(git restore:*)",
       "Bash(git commit:*)",
       "Bash(node --check:*)",
-      "Bash(timeout 5 node:*)"
+      "Bash(timeout 5 node:*)",
+      "Bash(curl:*)",
+      "Bash(node:*)"
     ]
   }
 }
