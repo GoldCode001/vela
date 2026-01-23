@@ -1,51 +1,30 @@
 import { useCallback } from 'react';
-import {
-  FundButton,
-  getOnrampBuyUrl
-} from '@coinbase/onchainkit/fund';
 
 export default function CoinbasePayWidget({ walletAddress, onClose, onSuccess, verifyOnly = false }) {
-  const projectId = import.meta.env.VITE_COINBASE_PROJECT_ID;
-
-  // Fallback: Direct URL method if FundButton doesn't work
+  // Direct Coinbase Onramp URL - no SDK needed, no session token required
   const openCoinbaseOnramp = useCallback(() => {
-    const onrampUrl = getOnrampBuyUrl({
-      projectId,
-      addresses: { [walletAddress]: ['base'] },
-      assets: ['USDC'],
-      presetFiatAmount: verifyOnly ? 10 : 50,
-      fiatCurrency: 'USD',
-    });
-    window.open(onrampUrl, '_blank', 'width=460,height=750');
-  }, [projectId, walletAddress, verifyOnly]);
+    if (!walletAddress) return;
 
-  if (!projectId) {
-    return (
-      <div
-        className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
-        onClick={onClose}
-      >
-        <div
-          className="relative w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl p-8"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 z-10 w-10 h-10 bg-black/20 hover:bg-black/40 rounded-full flex items-center justify-center transition"
-          >
-            <span className="text-white text-2xl font-bold">×</span>
-          </button>
-          <div className="text-center">
-            <p className="text-red-500 text-lg font-semibold mb-4">Configuration Error</p>
-            <p className="text-gray-700 mb-4">
-              Coinbase Project ID is missing. Add VITE_COINBASE_PROJECT_ID to your environment variables.
-            </p>
-            <button onClick={onClose} className="btn-primary">Close</button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+    const amount = verifyOnly ? 10 : 50;
+
+    // Build Coinbase Onramp URL directly
+    // This bypasses the SDK and session token requirements
+    const params = new URLSearchParams({
+      addresses: JSON.stringify({ [walletAddress]: ['base'] }),
+      assets: JSON.stringify(['USDC']),
+      presetFiatAmount: amount.toString(),
+      defaultPaymentMethod: 'CARD',
+    });
+
+    const url = `https://pay.coinbase.com/buy/select-asset?${params.toString()}`;
+    window.open(url, '_blank', 'width=460,height=750');
+
+    // Call onSuccess after opening (user completes purchase in popup)
+    if (onSuccess) {
+      // Delay to give user time to complete
+      setTimeout(onSuccess, 1000);
+    }
+  }, [walletAddress, verifyOnly, onSuccess]);
 
   if (!walletAddress) {
     return (
@@ -61,7 +40,7 @@ export default function CoinbasePayWidget({ walletAddress, onClose, onSuccess, v
             onClick={onClose}
             className="absolute top-4 right-4 z-10 w-10 h-10 bg-black/20 hover:bg-black/40 rounded-full flex items-center justify-center transition"
           >
-            <span className="text-white text-2xl font-bold">×</span>
+            <span className="text-white text-2xl font-bold">&times;</span>
           </button>
           <div className="text-center">
             <p className="text-red-500 text-lg font-semibold mb-4">Error</p>
@@ -86,7 +65,7 @@ export default function CoinbasePayWidget({ walletAddress, onClose, onSuccess, v
           onClick={onClose}
           className="absolute top-4 right-4 z-10 w-10 h-10 bg-black/20 hover:bg-black/40 rounded-full flex items-center justify-center transition"
         >
-          <span className="text-white text-2xl font-bold">×</span>
+          <span className="text-white text-2xl font-bold">&times;</span>
         </button>
 
         <div className="text-center">
@@ -98,34 +77,16 @@ export default function CoinbasePayWidget({ walletAddress, onClose, onSuccess, v
           </p>
 
           <div className="space-y-4">
-            {/* Primary: OnchainKit FundButton */}
-            <FundButton
-              className="w-full py-4 px-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors"
-              text="Buy with Coinbase"
-              fundingUrl={getOnrampBuyUrl({
-                projectId,
-                addresses: { [walletAddress]: ['base'] },
-                assets: ['USDC'],
-                presetFiatAmount: verifyOnly ? 10 : 50,
-                fiatCurrency: 'USD',
-              })}
-              onPopupClose={() => {
-                if (onSuccess) onSuccess();
-                onClose();
-              }}
-            />
-
-            {/* Fallback button */}
             <button
               onClick={openCoinbaseOnramp}
-              className="w-full py-3 px-6 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-colors text-sm"
+              className="w-full py-4 px-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors"
             >
-              Open in new window instead
+              Buy with Coinbase
             </button>
           </div>
 
           <p className="text-xs text-gray-500 mt-4">
-            Powered by Coinbase Onramp
+            Opens Coinbase in a new window
           </p>
         </div>
       </div>
