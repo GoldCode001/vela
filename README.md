@@ -64,7 +64,7 @@ VITE_COINBASE_APP_ID=your_coinbase_app_id
 ```env
 PORT=3001
 BASE_RPC_URL=https://mainnet.base.org
-POLYGON_RPC=https://polygon-rpc.com
+POLYGON_RPC=https://polygon.llamarpc.com
 SOCKET_API_KEY=your_socket_api_key
 SUPABASE_URL=your_supabase_url
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key

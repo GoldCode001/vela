@@ -3,7 +3,7 @@ import { ethers } from 'ethers';
 // 1inch Resolver contract on Polygon
 const RESOLVER_ADDRESS = '0x1111111254EEB25477B68fb85Ed929f73A960582';
 const USDC_ADDRESS = '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359';
-const POLYGON_RPC = 'https://polygon-rpc.com';
+const POLYGON_RPC = process.env.POLYGON_RPC || 'https://polygon.llamarpc.com';
 
 // 1inch Fusion+ Pool (Shared Liquidity)
 const FUSION_POOL_ADDRESS = '0x111111125421cA6dc452d289314280a0f8842A65'; // Example address

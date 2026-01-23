@@ -2,7 +2,7 @@ import { ClobClient } from '@polymarket/clob-client';
 import { ethers } from 'ethers';
 
 const CLOB_API_URL = 'https://clob.polymarket.com';
-const POLYGON_RPC = 'https://polygon-rpc.com';
+const POLYGON_RPC = process.env.POLYGON_RPC || 'https://polygon.llamarpc.com';
 
 // Initialize CLOB client with user's private key
 export function createClobClient(privateKey) {
